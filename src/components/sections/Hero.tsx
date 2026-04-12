@@ -89,20 +89,20 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-[700px] px-6 md:px-16 container mx-auto pt-24 md:pt-0">
         <motion.div
-          variants={staggerContainer}
+          variants={staggerContainer as any}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
         >
           {/* Eyebrow */}
-          <motion.div variants={fadeUp} className="text-[0.78rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-6 flex items-center gap-3">
+          <motion.div variants={fadeUp as any} className="text-[0.78rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-6 flex items-center gap-3">
             <span className="block w-8 h-[1px] bg-[var(--color-sage-dark)]" />
             100% Chemical Free · Natural · Pure
           </motion.div>
 
           {/* Title */}
           <motion.h1 
-            variants={fadeUp} 
+            variants={fadeUp as any} 
             className="font-serif text-[clamp(3.5rem,8vw,6.5rem)] font-light mb-6 text-[var(--color-text)]"
             style={{ lineHeight: 1.0, letterSpacing: '-0.01em', fontFamily: 'var(--font-cormorant)' }}
           >
@@ -112,12 +112,12 @@ export default function Hero() {
           </motion.h1>
 
           {/* Subtitle */}
-          <motion.p variants={fadeUp} className="text-[1rem] text-[var(--color-text-muted)] leading-[1.8] max-w-[400px] mb-10 font-light">
+          <motion.p variants={fadeUp as any} className="text-[1rem] text-[var(--color-text-muted)] leading-[1.8] max-w-[400px] mb-10 font-light">
             Crafted from nature's finest ingredients. No chemicals, no compromise — only pure, gentle care for your skin and hair.
           </motion.p>
 
           {/* Actions */}
-          <motion.div variants={fadeUp} className="flex gap-4 items-center">
+          <motion.div variants={fadeUp as any} className="flex gap-4 items-center">
             <Link href="/shop" className="btn-primary">
               Explore Products
             </Link>

@@ -74,12 +74,12 @@ export default function ProductGrid() {
         viewport={{ once: true }}
       >
         <div>
-          <motion.div variants={fadeUp} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
+          <motion.div variants={fadeUp as any} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
             <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
             Our Collection
           </motion.div>
           <motion.h2 
-            variants={fadeUp} 
+            variants={fadeUp as any} 
             className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light leading-[1.15]"
             style={{ fontFamily: 'var(--font-cormorant)' }}
           >
@@ -87,7 +87,7 @@ export default function ProductGrid() {
             <em className="italic text-[var(--color-sage-dark)]">real results</em>
           </motion.h2>
         </div>
-        <motion.div variants={fadeUp}>
+        <motion.div variants={fadeUp as any}>
           <Link 
             href="/shop" 
             className="text-[0.8rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline flex items-center gap-2 transition-all duration-300 whitespace-nowrap pb-1 border-b border-[var(--color-earth)] hover:text-[var(--color-sage-dark)] hover:gap-3"
@@ -106,7 +106,7 @@ export default function ProductGrid() {
         viewport={{ once: true }}
       >
         {products.map((product, idx) => (
-          <ProductCard key={idx} product={product} variants={fadeUp} />
+          <ProductCard key={idx} product={product} variants={fadeUp as any} />
         ))}
       </motion.div>
     </section>

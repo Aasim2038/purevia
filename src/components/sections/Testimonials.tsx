@@ -90,13 +90,13 @@ export default function Testimonials() {
         whileInView="show"
         viewport={{ once: true }}
       >
-        <motion.div variants={fadeUp} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
+        <motion.div variants={fadeUp as any} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
           <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
           What Our Customers Say
         </motion.div>
         
         <motion.h2 
-          variants={fadeUp} 
+          variants={fadeUp as any} 
           className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light leading-[1.15] mb-16 text-[var(--color-text)]"
           style={{ fontFamily: 'var(--font-cormorant)' }}
         >
@@ -116,7 +116,7 @@ export default function Testimonials() {
           {testimonials.map((test, idx) => (
             <motion.div 
               key={idx}
-              variants={fadeUp}
+              variants={fadeUp as any}
               className={`w-[85%] md:w-auto shrink-0 bg-[var(--color-white)] rounded-[20px] p-8 border border-[rgba(138,158,126,0.2)] transition-transform duration-300 ${!isDragging ? 'hover:-translate-y-2 hover:shadow-[0_12px_40px_rgba(138,158,126,0.08)]' : ''} ${isDragging ? 'pointer-events-none snap-none' : 'snap-center md:snap-start'}`}
             >
               <div className="text-[var(--color-earth)] text-[0.85rem] tracking-[0.1em] mb-4 pointer-events-none">

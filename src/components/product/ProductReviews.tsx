@@ -36,13 +36,13 @@ export default function ProductReviews() {
         viewport={{ once: true }}
         className="max-w-[1000px] mx-auto"
       >
-        <motion.h3 variants={fadeUp} className="font-serif text-[clamp(2rem,3vw,2.5rem)] text-[var(--color-text)] font-light mb-12 text-center" style={{ fontFamily: 'var(--font-cormorant)' }}>
+        <motion.h3 variants={fadeUp as any} className="font-serif text-[clamp(2rem,3vw,2.5rem)] text-[var(--color-text)] font-light mb-12 text-center" style={{ fontFamily: 'var(--font-cormorant)' }}>
           Customer <em className="italic text-[var(--color-sage-dark)]">Reviews</em>
         </motion.h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8">
           {/* Rating Summary */}
-          <motion.div variants={fadeUp} className="md:col-span-1">
+          <motion.div variants={fadeUp as any} className="md:col-span-1">
             <div className="text-[4rem] font-serif font-light text-[var(--color-text)] leading-none mb-2" style={{ fontFamily: 'var(--font-cormorant)' }}>4.8</div>
             <div className="text-[var(--color-earth)] text-[1.2rem] mb-2 tracking-[0.1em]">★★★★★</div>
             <div className="text-[0.85rem] text-[var(--color-text-muted)] font-light mb-8">Based on 124 reviews</div>
@@ -69,7 +69,7 @@ export default function ProductReviews() {
           {/* Individual Reviews */}
           <motion.div variants={staggerContainer} className="md:col-span-2 flex flex-col gap-8 md:pl-12 border-t md:border-t-0 md:border-l border-[rgba(138,158,126,0.15)] pt-8 md:pt-0">
             {reviews.map((rev, idx) => (
-              <motion.div key={idx} variants={fadeUp} className="pb-8 border-b border-[rgba(138,158,126,0.1)] last:border-0 last:pb-0">
+              <motion.div key={idx} variants={fadeUp as any} className="pb-8 border-b border-[rgba(138,158,126,0.1)] last:border-0 last:pb-0">
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-[var(--color-earth)] text-[0.9rem] tracking-[0.1em]">
                     {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}

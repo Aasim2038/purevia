@@ -14,9 +14,9 @@ export default function Footer() {
           <p className="text-[0.9rem] text-[rgba(247,243,237,0.6)] leading-[1.8] font-light mb-8 max-w-[320px]">
             Entirely True, Entirely You. Natural beauty products crafted with love and pure ingredients.
           </p>
-          <a href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 text-[1.1rem] text-white hover:text-[var(--color-sage)] transition-colors duration-300 decoration-transparent">
+          <Link href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="inline-flex items-center gap-3 text-[1.1rem] text-white hover:text-[var(--color-sage)] transition-colors duration-300 decoration-transparent">
             +91 80551 97578
-          </a>
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -34,10 +34,10 @@ export default function Footer() {
         <div>
           <div className="text-[0.8rem] tracking-[0.2em] uppercase text-[var(--color-sage)] mb-6">Connect</div>
           <ul className="list-none p-0 m-0 flex flex-col gap-4">
-            <li><a href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">WhatsApp</a></li>
-            <li><a href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Instagram</a></li>
-            <li><a href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Contact Us</a></li>
-            <li><a href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</a></li>
+            <li><Link href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">WhatsApp</Link></li>
+            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Instagram</Link></li>
+            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Contact Us</Link></li>
+            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
           </ul>
         </div>
       </div>

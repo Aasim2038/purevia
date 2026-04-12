@@ -92,13 +92,13 @@ export default function Ingredients() {
         whileInView="show"
         viewport={{ once: true }}
       >
-        <motion.div variants={fadeUp} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
+        <motion.div variants={fadeUp as any} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
           <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
           What's Inside
         </motion.div>
         
         <motion.h2 
-          variants={fadeUp} 
+          variants={fadeUp as any} 
           className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light leading-[1.15] text-[var(--color-text)]"
           style={{ fontFamily: 'var(--font-cormorant)' }}
         >
@@ -124,7 +124,7 @@ export default function Ingredients() {
         {ingredients.map((item, idx) => (
           <motion.div 
             key={idx}
-            variants={fadeRight}
+            variants={fadeRight as any}
             className={`w-[85%] md:w-[320px] bg-[var(--color-white)] rounded-[20px] p-8 md:snap-start border border-[rgba(196,168,130,0.2)] shrink-0 transition-transform duration-300 ${!isDragging ? 'hover:-translate-y-2' : ''} ${isDragging ? 'pointer-events-none snap-none' : 'snap-center'}`}
           >
             <span className="text-[2.5rem] mb-4 block leading-none pointer-events-none">{item.icon}</span>

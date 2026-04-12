@@ -29,7 +29,7 @@ export default function NatureSection() {
           viewport={{ once: true }}
         >
           <motion.div 
-            variants={fadeUp}
+            variants={fadeUp as any}
             className="absolute top-0 left-0 w-[72%] h-[260px] md:h-[420px] rounded-3xl border border-[rgba(196,168,130,0.25)] flex items-center justify-center overflow-hidden"
             style={{ background: 'linear-gradient(160deg, var(--color-warm) 0%, rgba(138,158,126,0.25) 100%)' }}
           >
@@ -50,7 +50,7 @@ export default function NatureSection() {
           </motion.div>
           
           <motion.div 
-            variants={fadeUp}
+            variants={fadeUp as any}
             className="absolute bottom-0 right-0 w-[55%] h-[120px] md:h-[180px] bg-[var(--color-sage-dark)] rounded-[24px] flex flex-col justify-center p-[1.8rem] overflow-hidden"
           >
             <p 
@@ -72,13 +72,13 @@ export default function NatureSection() {
           whileInView="show"
           viewport={{ once: true }}
         >
-          <motion.div variants={fadeUp} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
+          <motion.div variants={fadeUp as any} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
             <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
             Our Story
           </motion.div>
 
           <motion.h2 
-            variants={fadeUp} 
+            variants={fadeUp as any} 
             className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light leading-[1.2] mb-6 text-[var(--color-text)]"
             style={{ fontFamily: 'var(--font-cormorant)' }}
           >
@@ -86,15 +86,15 @@ export default function NatureSection() {
             backed by trust
           </motion.h2>
 
-          <motion.p variants={fadeUp} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
+          <motion.p variants={fadeUp as any} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
             Puroable was born from a simple belief — that the best skincare and haircare doesn't need a chemistry lab. It needs the right plants, the right process, and the right intention.
           </motion.p>
-          <motion.p variants={fadeUp} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
+          <motion.p variants={fadeUp as any} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
             Every product we make is free from parabens, sulphates, artificial fragrances, and synthetic chemicals. Just pure, effective nature — the way it was meant to be.
           </motion.p>
 
           <div className="mt-[2.5rem] flex flex-col gap-4">
-            <motion.div variants={fadeUp} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
+            <motion.div variants={fadeUp as any} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
               <div className="w-[36px] h-[36px] bg-[rgba(138,158,126,0.15)] rounded-lg flex items-center justify-center text-[1rem] shrink-0">🌱</div>
               <div className="text-[0.88rem] text-[var(--color-text-muted)] leading-[1.5]">
                 <strong className="block text-[var(--color-text)] font-medium text-[0.92rem]">Zero Chemicals</strong>
@@ -102,7 +102,7 @@ export default function NatureSection() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
+            <motion.div variants={fadeUp as any} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
               <div className="w-[36px] h-[36px] bg-[rgba(138,158,126,0.15)] rounded-lg flex items-center justify-center text-[1rem] shrink-0">🤝</div>
               <div className="text-[0.88rem] text-[var(--color-text-muted)] leading-[1.5]">
                 <strong className="block text-[var(--color-text)] font-medium text-[0.92rem]">Ethically Sourced</strong>
@@ -110,7 +110,7 @@ export default function NatureSection() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
+            <motion.div variants={fadeUp as any} className="flex items-center gap-4 p-4 border border-[rgba(138,158,126,0.2)] rounded-xl transition-all duration-300 hover:bg-[rgba(138,158,126,0.06)] hover:border-[rgba(138,158,126,0.4)]">
               <div className="w-[36px] h-[36px] bg-[rgba(138,158,126,0.15)] rounded-lg flex items-center justify-center text-[1rem] shrink-0">💚</div>
               <div className="text-[0.88rem] text-[var(--color-text-muted)] leading-[1.5]">
                 <strong className="block text-[var(--color-text)] font-medium text-[0.92rem]">Skin Safe</strong>

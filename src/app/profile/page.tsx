@@ -105,7 +105,7 @@ export default function ProfilePage() {
         animate="show"
       >
         {/* User Header */}
-        <motion.div variants={itemVariants} className="text-center mb-12">
+        <motion.div variants={itemVariants as any} className="text-center mb-12">
           <div className="w-24 h-24 mx-auto bg-[var(--color-warm)] rounded-full flex items-center justify-center mb-6 shadow-sm border border-[rgba(196,168,130,0.3)]">
             <span className="font-serif text-3xl text-[var(--color-sage-dark)]">IS</span>
           </div>
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
         {/* Navigation List (Cards) */}
         <div className=" अंतरिक्ष-y-4 mb-20 space-y-4">
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants as any}>
             <Link href="#" className="group block bg-[rgba(253,250,246,0.6)] backdrop-blur-md border border-[rgba(196,168,130,0.15)] rounded-2xl p-6 transition-all duration-500 hover:shadow-[0_12px_40px_rgba(92,115,82,0.06)] hover:bg-white hover:border-[var(--color-sage)] hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             </Link>
           </motion.div>
 
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants as any}>
             <Link href="#" className="group block bg-[rgba(253,250,246,0.6)] backdrop-blur-md border border-[rgba(196,168,130,0.15)] rounded-2xl p-6 transition-all duration-500 hover:shadow-[0_12px_40px_rgba(92,115,82,0.06)] hover:bg-white hover:border-[var(--color-sage)] hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -153,7 +153,7 @@ export default function ProfilePage() {
             </Link>
           </motion.div>
 
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants as any}>
             <Link href="#" className="group block bg-[rgba(253,250,246,0.6)] backdrop-blur-md border border-[rgba(196,168,130,0.15)] rounded-2xl p-6 transition-all duration-500 hover:shadow-[0_12px_40px_rgba(92,115,82,0.06)] hover:bg-white hover:border-[var(--color-sage)] hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -174,7 +174,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Logout Button */}
-        <motion.div variants={itemVariants} className="text-center">
+        <motion.div variants={itemVariants as any} className="text-center">
           <button onClick={() => setIsLoggedIn(false)} className="text-[13px] tracking-[0.18em] uppercase font-medium text-[var(--color-text-muted)] hover:text-red-800 transition-colors duration-300 flex items-center justify-center gap-3 mx-auto relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:w-0 after:h-[1px] after:bg-current after:transition-all after:duration-300 hover:after:w-full hover:after:left-0 py-2 focus:outline-none">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             Logout

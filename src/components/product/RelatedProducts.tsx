@@ -29,7 +29,7 @@ export default function RelatedProducts() {
         whileInView="show"
         viewport={{ once: true }}
       >
-        <motion.div variants={fadeUp} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center justify-center gap-3">
+        <motion.div variants={fadeUp as any} className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center justify-center gap-3">
           <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
           You Might Also Like
           <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
@@ -42,7 +42,7 @@ export default function RelatedProducts() {
           {products.map((product, idx) => (
             <motion.div 
               key={idx}
-              variants={fadeUp}
+              variants={fadeUp as any}
               className="group relative bg-[#FDFAF6] rounded-[20px] p-6 border border-[rgba(196,168,130,0.15)] transition-all duration-400 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(138,158,126,0.08)] flex flex-col items-center text-center cursor-pointer overflow-hidden"
             >
               <Link href="/product/123" className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 
 const images = [
   "linear-gradient(135deg, #E8F5E0 0%, #D4E5CB 100%)", // Mock Neem
@@ -12,7 +12,7 @@ export default function ProductGallery() {
   const [activeIdx, setActiveIdx] = useState(0);
 
   // Swipe handlers
-  const handleDragEnd = (_e: any, info: any) => {
+  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.x < -50 && activeIdx < images.length - 1) setActiveIdx(activeIdx + 1);
     if (info.offset.x > 50 && activeIdx > 0) setActiveIdx(activeIdx - 1);
   };
