@@ -86,7 +86,7 @@ export default function CheckoutPage() {
 
   const accordionVariants = {
     hidden: { height: 0, opacity: 0, overflow: 'hidden' },
-    visible: { height: 'auto', opacity: 1, overflow: 'hidden', transition: { duration: 0.4, ease: "easeInOut" } }
+    visible: { height: 'auto', opacity: 1, overflow: 'hidden', transition: { duration: 0.4, ease: "easeInOut" as const} }
   };
 
   // Shared generic summary details to avoid duplication
