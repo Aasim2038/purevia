@@ -28,6 +28,18 @@ export default function Navbar() {
 
   if (pathname?.startsWith('/admin')) return null;
 
+  const isCheckout = pathname === '/checkout';
+
+  if (isCheckout) {
+    return (
+      <nav className={`fixed top-0 left-0 right-0 z-[100] flex justify-center items-center py-6 px-6 bg-[rgba(247,243,237,0.95)] backdrop-blur-[12px] border-b border-[rgba(196,168,130,0.2)]`}>
+        <Link href="/" className="font-serif text-[2.2rem] font-light tracking-[0.1em] text-[var(--color-text)] no-underline">
+          Pur<span className="text-[var(--color-sage-dark)] italic">o</span>able
+        </Link>
+      </nav>
+    );
+  }
+
   return (
     <>
       <nav className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center transition-all duration-400 ${scrolled ? 'bg-[rgba(247,243,237,0.95)] backdrop-blur-[12px] py-4 px-6 md:px-16 border-b border-[rgba(196,168,130,0.2)]' : 'py-6 px-6 md:px-16 bg-[rgba(247,243,237,0)]'}`}>

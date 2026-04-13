@@ -13,6 +13,7 @@ export interface ProductType {
   icon: string;
   badge?: string | null;
   bg: string;
+  imageUrl?: string | null;
 }
 
 interface ProductCardProps {
@@ -56,14 +57,18 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
       
       <div className="h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
         <div className="absolute inset-0 z-0 opacity-80 mix-blend-multiply" style={{ background: product.bg }} />
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" />
+        ) : (
+          <div className="text-[5rem] relative z-[1] drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110 group-hover:-translate-y-1">
+            {product.icon}
+          </div>
+        )}
         {product.badge && (
-          <span className="absolute top-4 left-4 bg-[var(--color-sage-dark)]/90 text-white text-[0.68rem] tracking-[0.12em] uppercase py-1 px-3 rounded-full z-10 backdrop-blur-[8px]">
+          <span className="absolute top-4 left-4 bg-[var(--color-sage-dark)]/90 text-white text-[0.68rem] tracking-[0.12em] uppercase py-1 px-3 rounded-full z-20 backdrop-blur-[8px]">
             {product.badge}
           </span>
         )}
-        <div className="text-[5rem] relative z-[1] drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110 group-hover:-translate-y-1">
-          {product.icon}
-        </div>
       </div>
 
       <div className="p-6 flex flex-col flex-1">
@@ -79,7 +84,7 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
           </div>
           <button 
             onClick={handleAdd}
-            className={`w-[36px] h-[36px] border-none rounded-full flex items-center justify-center transition-all duration-300 shadow-sm focus:outline-none ${isAdded ? 'bg-[var(--color-sage-dark)] text-white scale-110' : 'bg-[var(--color-text)] text-white hover:bg-[var(--color-sage-dark)] hover:scale-110'}`}
+            className={`w-[36px] h-[36px] border-none rounded-full flex items-center justify-center transition-all duration-300 shadow-sm focus:outline-none active:scale-95 ${isAdded ? 'bg-[var(--color-sage-dark)] text-white scale-110' : 'bg-[var(--color-text)] text-white hover:bg-[var(--color-sage-dark)] hover:scale-110'}`}
             aria-label="Add to Cart"
           >
             {isAdded ? (

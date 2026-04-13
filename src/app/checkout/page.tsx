@@ -1,13 +1,17 @@
 "use client";
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
-import Footer from '@/components/sections/Footer';
+
+type CheckoutStep = 'shipping' | 'payment';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, clearCart } = useCart();
+  const [activeStep, setActiveStep] = useState<CheckoutStep>('shipping');
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
+  
   const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,8 +59,18 @@ export default function CheckoutPage() {
     formData.phone.trim() !== '' && 
     formData.address.trim() !== '';
 
+  const handleShippingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isFormValid) {
+      setActiveStep('payment');
+    }
+  };
+
   const handlePlaceOrder = () => {
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      setActiveStep('shipping');
+      return;
+    }
     setIsSubmitting(true);
     
     // Simulate API delay
@@ -70,191 +84,289 @@ export default function CheckoutPage() {
   const shipping = subtotal > 0 ? 50 : 0;
   const total = subtotal + shipping;
 
+  const accordionVariants = {
+    hidden: { height: 0, opacity: 0, overflow: 'hidden' },
+    visible: { height: 'auto', opacity: 1, overflow: 'hidden', transition: { duration: 0.4, ease: "easeInOut" } }
+  };
+
+  // Shared generic summary details to avoid duplication
+  const renderSummaryDetails = (isMobile: boolean = false) => (
+    <div className={`flex flex-col gap-6 ${isMobile ? 'pt-6 border-t border-[rgba(138,158,126,0.15)] mt-4' : ''}`}>
+      {items.length === 0 ? (
+        <div className="text-[0.95rem] text-[var(--color-text-muted)] font-light italic text-center py-6">Your cart is perfectly pure... but empty.</div>
+      ) : (
+        <div className="flex flex-col gap-6 max-h-[350px] overflow-y-auto overflow-x-hidden pt-3 pr-4 pl-1">
+          {items.map(item => (
+            <div key={item.id} className="flex justify-between items-center gap-6">
+              <div className="flex items-center gap-5">
+                <div className="relative mt-2">
+                  <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] flex items-center justify-center text-[18px]">
+                     {item.name.charAt(0)}
+                  </div>
+                  <span className="absolute -top-3 -right-3 w-[22px] h-[22px] flex items-center justify-center bg-[var(--color-sage-dark)] text-white text-[0.65rem] rounded-full shadow-sm z-10">{item.quantity}</span>
+                </div>
+                <span className="font-serif text-[1.05rem] md:text-[1.15rem] text-[var(--color-text)] font-light leading-snug" style={{ fontFamily: 'var(--font-cormorant)' }}>{item.name}</span>
+              </div>
+              <span className="font-serif text-[1.05rem] md:text-[1.15rem] text-[var(--color-earth)] font-medium whitespace-nowrap" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{item.price * item.quantity}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-4 py-6 border-y border-[rgba(138,158,126,0.15)] mt-4">
+        <div className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[var(--color-text-muted)] uppercase tracking-wider">
+          <span>Subtotal</span>
+          <span className="font-medium text-[var(--color-text)]">₹{subtotal}</span>
+        </div>
+        <div className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[var(--color-text-muted)] uppercase tracking-wider">
+          <span>Shipping</span>
+          <span className="font-medium text-[var(--color-text)]">{subtotal > 0 ? `₹${shipping}` : '—'}</span>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <span className="font-medium text-[1.1rem] md:text-[1.2rem] uppercase tracking-[0.1em] text-[var(--color-text)]">Total</span>
+        <span className="font-serif text-[2rem] md:text-[2.4rem] font-light text-[var(--color-earth)] italic leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
+      </div>
+    </div>
+  );
+
+  const BRAND_NAME = "{BRAND_NAME}";
+
   return (
-    <main className="bg-[var(--color-cream)] pt-32 pb-0 min-h-screen select-none">
-      <div className="px-6 md:px-16 mx-auto container max-w-[1200px] mb-24">
+    <main className="bg-[var(--color-cream)] pt-[90px] pb-40 lg:pb-32 min-h-screen select-none relative">
+      
+      {/* Mobile Sticky Order Peeker (Only visible on Mobile) */}
+      <div className="lg:hidden sticky top-[80px] z-40 bg-white border-b border-[rgba(138,158,126,0.15)] shadow-[0_4px_15px_rgba(138,158,126,0.06)] px-6 py-5">
+        <button 
+          onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+          className="w-full flex justify-between items-center focus:outline-none"
+        >
+          <div className="flex items-center gap-3 text-[0.95rem] font-medium text-[var(--color-text)]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-sage-dark)]"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            Order Summary <span className="text-[var(--color-text-muted)] text-[0.85rem] font-normal">({items.reduce((s, i) => s + i.quantity, 0)} items)</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="font-serif text-[1.2rem] text-[var(--color-earth)] font-medium" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`text-[var(--color-text-muted)] transition-transform duration-300 ${isMobileSummaryOpen ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+        </button>
+        <AnimatePresence>
+          {isMobileSummaryOpen && (
+            <motion.div initial="hidden" animate="visible" exit="hidden" variants={accordionVariants}>
+              {renderSummaryDetails(true)}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="px-6 md:px-16 mx-auto container max-w-[1200px] mt-10 lg:mt-16">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="mb-12 border-b border-[rgba(138,158,126,0.15)] pb-6"
+          className="mb-8 lg:mb-12 text-center lg:text-left"
         >
-          <div className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex items-center gap-3">
-            <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
-            Final Step
+          <div className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex justify-center lg:justify-start items-center gap-3">
+             <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
+             Final Step
+             <span className="hidden lg:block w-6 h-[1px] bg-[var(--color-sage)]" />
           </div>
           <h1 className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-            Secure <em className="italic text-[var(--color-sage-dark)]">Checkout</em>
+            Secure <em className="italic text-[var(--color-sage-dark)]">Checkout</em> at {BRAND_NAME}
           </h1>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-          {/* Left Column: Form */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="lg:col-span-7"
-          >
-            <div className="bg-white p-8 md:p-12 rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border border-[rgba(138,158,126,0.1)]">
-              <h2 className="font-serif text-[1.8rem] font-light mb-8 text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>Shipping Information</h2>
-              
-              <form className="flex flex-col gap-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">First Name</label>
-                    <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Last Name</label>
-                    <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+          
+          {/* Left Column: Form Accordion */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            {/* STEP 1: SHIPPING */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
+              className={`bg-white rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border transition-all duration-300 overflow-hidden ${activeStep === 'shipping' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.2)]'}`}
+            >
+              <button 
+                onClick={() => setActiveStep('shipping')} 
+                className="w-full flex justify-between items-center p-6 lg:p-8 focus:outline-none"
+              >
+                <div className="flex items-center gap-5">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-serif text-[1.2rem] transition-colors ${activeStep === 'shipping' || isFormValid ? 'bg-[var(--color-sage-dark)] text-white' : 'bg-[#F7F3ED] text-[var(--color-text-muted)]'}`}>1</div>
+                  <h2 className="font-serif text-[1.5rem] lg:text-[1.7rem] font-light text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>Shipping Information</h2>
                 </div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${activeStep === 'shipping' ? 'rotate-180 text-[var(--color-sage-dark)]' : 'text-[var(--color-text-muted)]'}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <AnimatePresence>
+                {activeStep === 'shipping' && (
+                  <motion.div initial="hidden" animate="visible" exit="hidden" variants={accordionVariants}>
+                    <div className="px-6 lg:px-8 pb-8 pt-0">
+                      <form onSubmit={handleShippingSubmit} className="flex flex-col gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">First Name</label>
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Last Name</label>
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                          </div>
+                        </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Email Address</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Email Address</label>
+                          <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                        </div>
 
-                <div className="flex flex-col gap-2">
-                  <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Phone Number</label>
-                  <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Phone Number</label>
+                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                        </div>
 
-                <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex justify-between items-end mb-1">
-                    <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Full Address</label>
-                    <button 
-                      type="button" 
-                      onClick={handleGeolocation}
-                      disabled={geoLoading}
-                      className="text-[0.7rem] uppercase tracking-[0.1em] text-[var(--color-sage-dark)] cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 focus:outline-none"
-                    >
-                      {geoLoading ? "Locating..." : "📍 Use My Current Location"}
-                    </button>
-                  </div>
-                  {coords && <div className="text-[0.75rem] text-[var(--color-sage-dark)] font-medium mb-1">Coordinates stored securely for delivery routing.</div>}
-                  {geoError && <div className="text-[0.75rem] text-red-500/80 mb-1">{geoError}</div>}
-                  <textarea name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem] resize-none"></textarea>
-                  <input type="hidden" name="lat" value={coords?.lat || ''} />
-                  <input type="hidden" name="lng" value={coords?.lng || ''} />
-                </div>
+                        <div className="flex flex-col gap-2 mt-2">
+                          <div className="flex justify-between items-end mb-2">
+                            <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Full Address</label>
+                            <button 
+                              type="button" 
+                              onClick={handleGeolocation}
+                              disabled={geoLoading}
+                              className="text-[0.75rem] bg-[rgba(138,158,126,0.1)] hover:bg-[rgba(138,158,126,0.2)] active:scale-95 text-[var(--color-sage-dark)] font-medium px-4 py-2 rounded-full transition-all flex items-center gap-1.5 focus:outline-none shadow-sm"
+                            >
+                              <span className="text-[1rem]">📍</span> 
+                              {geoLoading ? "Locating..." : "Use My Location"}
+                            </button>
+                          </div>
+                          {coords && <div className="text-[0.75rem] text-[var(--color-sage-dark)] font-medium mb-1">Coordinates stored securely for delivery routing.</div>}
+                          {geoError && <div className="text-[0.75rem] text-red-500/80 mb-1">{geoError}</div>}
+                          <textarea name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem] resize-none"></textarea>
+                        </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">City</label>
-                    <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">PIN Code</label>
-                    <input type="text" name="pin" value={formData.pin} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] focus:ring-1 focus:ring-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
-                  </div>
-                </div>
-              </form>
-            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">City</label>
+                            <input type="text" name="city" value={formData.city} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">PIN Code</label>
+                            <input type="text" name="pin" value={formData.pin} onChange={handleChange} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem]" />
+                          </div>
+                        </div>
 
-            {/* Payment Section */}
-            <div className="bg-white p-8 md:p-12 rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border border-[rgba(138,158,126,0.1)] mt-8">
-              <h2 className="font-serif text-[1.8rem] font-light mb-8 text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>Payment Method</h2>
-              <div className="flex flex-col gap-4">
-                <label className={`relative flex items-center justify-between p-5 rounded-2xl border cursor-pointer transition-all duration-300 ${paymentMethod === 'card' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-[0_4px_20px_rgba(138,158,126,0.08)]' : 'border-[rgba(138,158,126,0.2)] bg-white hover:border-[var(--color-earth)]'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'card' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
-                      {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
+                        <button 
+                           type="submit"
+                           disabled={!isFormValid}
+                           className={`mt-4 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${!isFormValid ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
+                        >
+                           Continue to Payment
+                        </button>
+                      </form>
                     </div>
-                    <span className="text-[0.95rem] text-[var(--color-text)] font-medium">Card Payment</span>
-                  </div>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-sage-dark)] opacity-70"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                  <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="hidden" />
-                </label>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-                <label className={`relative flex items-center justify-between p-5 rounded-2xl border cursor-pointer transition-all duration-300 ${paymentMethod === 'upi' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-[0_4px_20px_rgba(138,158,126,0.08)]' : 'border-[rgba(138,158,126,0.2)] bg-white hover:border-[var(--color-earth)]'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'upi' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
-                      {paymentMethod === 'upi' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
+            {/* STEP 2: PAYMENT */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
+              className={`bg-white rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border transition-all duration-300 overflow-hidden ${activeStep === 'payment' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.2)]'}`}
+            >
+              <button 
+                onClick={() => { if(isFormValid) setActiveStep('payment') }} 
+                disabled={!isFormValid}
+                className={`w-full flex justify-between items-center p-6 lg:p-8 focus:outline-none ${!isFormValid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div className="flex items-center gap-5">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-serif text-[1.2rem] transition-colors ${activeStep === 'payment' ? 'bg-[var(--color-sage-dark)] text-white' : 'bg-[#F7F3ED] text-[var(--color-text-muted)]'}`}>2</div>
+                  <h2 className="font-serif text-[1.5rem] lg:text-[1.7rem] font-light text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>Payment Method</h2>
+                </div>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${activeStep === 'payment' ? 'rotate-180 text-[var(--color-sage-dark)]' : 'text-[var(--color-text-muted)]'}`}><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <AnimatePresence>
+                {activeStep === 'payment' && (
+                  <motion.div initial="hidden" animate="visible" exit="hidden" variants={accordionVariants}>
+                    <div className="px-6 lg:px-8 pb-8 pt-0 flex flex-col gap-4">
+                      <label className={`relative flex items-center justify-between p-5 rounded-xl border cursor-pointer transition-all duration-300 active:scale-[0.99] ${paymentMethod === 'card' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-sm' : 'border-[rgba(138,158,126,0.2)] bg-[var(--color-cream)] hover:border-[var(--color-sage)]'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'card' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
+                            {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
+                          </div>
+                          <span className="text-[0.95rem] text-[var(--color-text)] font-medium">Card Payment</span>
+                        </div>
+                        <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="hidden" />
+                      </label>
+
+                      <label className={`relative flex items-center justify-between p-5 rounded-xl border cursor-pointer transition-all duration-300 active:scale-[0.99] ${paymentMethod === 'upi' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-sm' : 'border-[rgba(138,158,126,0.2)] bg-[var(--color-cream)] hover:border-[var(--color-sage)]'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'upi' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
+                            {paymentMethod === 'upi' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
+                          </div>
+                          <span className="text-[0.95rem] text-[var(--color-text)] font-medium">UPI / QR Code</span>
+                        </div>
+                        <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />
+                      </label>
+
+                      <label className={`relative flex items-center justify-between p-5 rounded-xl border cursor-pointer transition-all duration-300 active:scale-[0.99] ${paymentMethod === 'cod' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-sm' : 'border-[rgba(138,158,126,0.2)] bg-[var(--color-cream)] hover:border-[var(--color-sage)]'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'cod' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
+                            {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
+                          </div>
+                          <span className="text-[0.95rem] text-[var(--color-text)] font-medium">Cash on Delivery</span>
+                        </div>
+                        <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
+                      </label>
+                      
+                      {/* Place Order for Mobile embedded in payment step optionally, but we have sticky bottom bar. So just descriptive text here */}
+                      <div className="lg:hidden text-[0.85rem] text-center text-[var(--color-text-muted)] mt-5 italic">
+                        Use the sticky button below to complete your order securely.
+                      </div>
                     </div>
-                    <span className="text-[0.95rem] text-[var(--color-text)] font-medium">UPI / QR Code</span>
-                  </div>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-sage-dark)] opacity-70"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><rect x="7" y="7" width="10" height="10"></rect></svg>
-                  <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />
-                </label>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
 
-                <label className={`relative flex items-center justify-between p-5 rounded-2xl border cursor-pointer transition-all duration-300 ${paymentMethod === 'cod' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-[0_4px_20px_rgba(138,158,126,0.08)]' : 'border-[rgba(138,158,126,0.2)] bg-white hover:border-[var(--color-earth)]'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${paymentMethod === 'cod' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.4)]'}`}>
-                      {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-sage-dark)]"></div>}
-                    </div>
-                    <span className="text-[0.95rem] text-[var(--color-text)] font-medium">Cash on Delivery</span>
-                  </div>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-sage-dark)] opacity-70"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                  <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
-                </label>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right Column: Order Summary */}
+          {/* Right Column: Order Summary (Desktop Sticky Sidebar) */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="lg:col-span-5 relative"
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+            className="hidden lg:block lg:col-span-5"
           >
-            <div className="bg-[#FDFAF6] border border-[rgba(196,168,130,0.2)] p-8 md:p-10 rounded-[24px] lg:sticky lg:top-32 shadow-[0_10px_40px_rgba(138,158,126,0.03)]">
-              <h2 className="font-serif text-[1.8rem] font-light mb-8 text-[var(--color-text)] border-b border-[rgba(138,158,126,0.15)] pb-4" style={{ fontFamily: 'var(--font-cormorant)' }}>Order Summary</h2>
+            <div className="bg-white rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border border-[rgba(138,158,126,0.2)] p-10 sticky top-[120px]">
+              <h2 className="font-serif text-[1.6rem] font-light text-[var(--color-text)] mb-6 pb-4 border-b border-[rgba(138,158,126,0.15)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                Order Summary
+              </h2>
               
-              <div className="flex flex-col gap-5 mb-8 max-h-[350px] overflow-visible pr-2 pt-2">
-                {items.length === 0 ? (
-                  <div className="text-[0.95rem] text-[var(--color-text-muted)] font-light italic">Your cart is perfectly pure... but empty.</div>
-                ) : (
-                  items.map(item => (
-                    <div key={item.id} className="flex justify-between items-center gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          {/* Image Placeholder */}
-                          <div className="w-[60px] h-[60px] rounded-[10px] border border-[rgba(138,158,126,0.15)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)]"></div>
-                          <span className="absolute -top-2.5 -right-2.5 w-[22px] h-[22px] flex items-center justify-center bg-[var(--color-sage-dark)] text-white text-[0.65rem] rounded-full shadow-sm z-10">{item.quantity}</span>
-                        </div>
-                        <span className="font-serif text-[1.1rem] bg-transparent text-[var(--color-text)] font-light" style={{ fontFamily: 'var(--font-cormorant)' }}>{item.name}</span>
-                      </div>
-                      <span className="font-serif text-[1.1rem] text-[var(--color-earth)] font-medium" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{item.price * item.quantity}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="flex flex-col gap-4 py-6 border-y border-[rgba(138,158,126,0.15)] mb-8">
-                <div className="flex justify-between items-center text-[0.8rem] text-[var(--color-text-muted)] uppercase tracking-wider">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-[var(--color-text)]">₹{subtotal}</span>
-                </div>
-                <div className="flex justify-between items-center text-[0.8rem] text-[var(--color-text-muted)] uppercase tracking-wider">
-                  <span>Shipping</span>
-                  <span className="font-medium text-[var(--color-text)]">{subtotal > 0 ? `₹${shipping}` : '—'}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center mb-10">
-                <span className="font-medium text-[1.1rem] uppercase tracking-[0.1em] text-[var(--color-text)]">Total</span>
-                <span className="font-serif text-[2.5rem] font-light text-[var(--color-earth)] italic leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
-              </div>
+              {renderSummaryDetails(false)}
 
               <button 
                 onClick={handlePlaceOrder}
                 disabled={!isFormValid || isSubmitting}
-                className={`w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
+                className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
               >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  "Place Order"
-                )}
+                {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
               </button>
             </div>
           </motion.div>
+
         </div>
       </div>
-      <Footer />
+
+      {/* Mobile Sticky Bottom CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(138,158,126,0.15)] p-5 px-6 z-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(138,158,126,0.08)] pb-8">
+        <div className="flex flex-col">
+          <span className="text-[0.7rem] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Total Amount</span>
+          <span className="font-serif text-[1.6rem] text-[var(--color-earth)] font-medium leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
+        </div>
+        <button 
+          onClick={handlePlaceOrder} 
+          disabled={!isFormValid || isSubmitting} 
+          className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
+        >
+          {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
+        </button>
+      </div>
     </main>
   );
 }
