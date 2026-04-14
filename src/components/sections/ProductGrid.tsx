@@ -12,7 +12,8 @@ const products = [
     size: "100ml",
     icon: "🌿",
     badge: "Bestseller",
-    bg: "linear-gradient(135deg, #E8F5E0, #C8E6B8)"
+    bg: "linear-gradient(135deg, #E8F5E0, #C8E6B8)",
+    category: "Skin Care"
   },
   {
     name: "Rose Turmeric Glow Serum",
@@ -21,7 +22,8 @@ const products = [
     size: "30ml",
     icon: "🌹",
     badge: "New",
-    bg: "linear-gradient(135deg, #FDF0E0, #F5D5A8)"
+    bg: "linear-gradient(135deg, #FDF0E0, #F5D5A8)",
+    category: "Skin Care"
   },
   {
     name: "Coconut Bhringraj Hair Oil",
@@ -30,7 +32,8 @@ const products = [
     size: "150ml",
     icon: "🥥",
     badge: null,
-    bg: "linear-gradient(135deg, #E8EFF8, #C8D8F0)"
+    bg: "linear-gradient(135deg, #E8EFF8, #C8D8F0)",
+    category: "Hair Care"
   },
   {
     name: "Hibiscus Face Pack",
@@ -39,7 +42,8 @@ const products = [
     size: "75g",
     icon: "🌸",
     badge: "Popular",
-    bg: "linear-gradient(135deg, #F5E8F0, #E8C8DC)"
+    bg: "linear-gradient(135deg, #F5E8F0, #E8C8DC)",
+    category: "Skin Care"
   },
   {
     name: "Green Tea Eye Cream",
@@ -48,7 +52,8 @@ const products = [
     size: "15g",
     icon: "🍵",
     badge: null,
-    bg: "linear-gradient(135deg, #F0F5E8, #D8E8C0)"
+    bg: "linear-gradient(135deg, #F0F5E8, #D8E8C0)",
+    category: "Skin Care"
   }
 ];
 
