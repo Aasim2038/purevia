@@ -12,6 +12,7 @@ export interface ProductType {
   size: string;
   icon: string;
   badge?: string | null;
+  category: string;
   bg: string;
   imageUrl?: string | null;
 }

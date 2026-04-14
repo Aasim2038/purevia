@@ -25,12 +25,12 @@ export default async function ShopPage() {
       name: p.name,
       desc: p.description || '',
       price: p.price,
-      category: p.category,
+      category: typeof p.category === 'string' ? p.category : '',
       size: "Standard",
       icon: preset.icon,
       badge: p.stock < 10 && p.stock > 0 ? "Low Stock" : p.stock === 0 ? "Out of Stock" : "New",
       bg: preset.bg,
-      imageUrl: p.images && p.images.length > 0 ? p.images[0] : null
+      imageUrl: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
     };
   });
 
