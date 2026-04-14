@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getShortOrderId } from "@/lib/orderId";
 
+export const dynamic = 'force-dynamic';
+
 type ProfileOrder = {
   id: string;
   totalAmount: number;
