@@ -2,11 +2,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const reviews = [
-  { name: "Priya Rao", date: "Oct 12, 2026", rating: 5, text: "Absolutely love it. The texture is amazing and my skin feels so soft." },
-  { name: "Sneha Kulkarni", date: "Sep 28, 2026", rating: 5, text: "Best natural face wash I've ever used. Doesn't strip moisture at all." },
-  { name: "Anjali Mehta", date: "Aug 14, 2026", rating: 4, text: "Very gentle and smells earthy. I just wish the bottle was bigger!" },
-];
+type ProductReview = {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+};
+
+type ProductReviewsProps = {
+  reviews: ProductReview[];
+};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -18,14 +24,17 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-export default function ProductReviews() {
-  const ratingData = [
-    { stars: 5, pct: 85 },
-    { stars: 4, pct: 10 },
-    { stars: 3, pct: 5 },
-    { stars: 2, pct: 0 },
-    { stars: 1, pct: 0 },
-  ];
+export default function ProductReviews({ reviews }: ProductReviewsProps) {
+  const totalReviews = reviews.length;
+  const averageRating = totalReviews > 0
+    ? (reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews)
+    : 0;
+
+  const ratingData = [5, 4, 3, 2, 1].map((stars) => {
+    const count = reviews.filter((review) => review.rating === stars).length;
+    const pct = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+    return { stars, pct };
+  });
 
   return (
     <div className="py-24 border-t border-[rgba(138,158,126,0.15)] mt-16">
@@ -43,9 +52,15 @@ export default function ProductReviews() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-8">
           {/* Rating Summary */}
           <motion.div variants={fadeUp as any} className="md:col-span-1">
-            <div className="text-[4rem] font-serif font-light text-[var(--color-text)] leading-none mb-2" style={{ fontFamily: 'var(--font-cormorant)' }}>4.8</div>
-            <div className="text-[var(--color-earth)] text-[1.2rem] mb-2 tracking-[0.1em]">★★★★★</div>
-            <div className="text-[0.85rem] text-[var(--color-text-muted)] font-light mb-8">Based on 124 reviews</div>
+            <div className="text-[4rem] font-serif font-light text-[var(--color-text)] leading-none mb-2" style={{ fontFamily: 'var(--font-cormorant)' }}>
+              {averageRating.toFixed(1)}
+            </div>
+            <div className="text-[var(--color-earth)] text-[1.2rem] mb-2 tracking-[0.1em]">
+              {'★'.repeat(Math.round(averageRating))}{'☆'.repeat(5 - Math.round(averageRating))}
+            </div>
+            <div className="text-[0.85rem] text-[var(--color-text-muted)] font-light mb-8">
+              Based on {totalReviews} review{totalReviews === 1 ? '' : 's'}
+            </div>
 
             <div className="flex flex-col gap-3">
               {ratingData.map((row, idx) => (
@@ -68,17 +83,23 @@ export default function ProductReviews() {
 
           {/* Individual Reviews */}
           <motion.div variants={staggerContainer} className="md:col-span-2 flex flex-col gap-8 md:pl-12 border-t md:border-t-0 md:border-l border-[rgba(138,158,126,0.15)] pt-8 md:pt-0">
-            {reviews.map((rev, idx) => (
-              <motion.div key={idx} variants={fadeUp as any} className="pb-8 border-b border-[rgba(138,158,126,0.1)] last:border-0 last:pb-0">
+            {reviews.length === 0 ? (
+              <motion.div variants={fadeUp as any} className="text-[0.95rem] text-[var(--color-text-muted)] font-light">
+                No reviews yet. Be the first to review this product.
+              </motion.div>
+            ) : reviews.map((rev) => (
+              <motion.div key={rev.id} variants={fadeUp as any} className="pb-8 border-b border-[rgba(138,158,126,0.1)] last:border-0 last:pb-0">
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-[var(--color-earth)] text-[0.9rem] tracking-[0.1em]">
                     {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
                   </div>
-                  <span className="text-[0.75rem] text-[var(--color-text-muted)] font-light tracking-wide">{rev.date}</span>
+                  <span className="text-[0.75rem] text-[var(--color-text-muted)] font-light tracking-wide">
+                    {new Date(rev.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
                 </div>
                 <div className="text-[0.9rem] text-[var(--color-text)] font-medium mb-3">{rev.name}</div>
                 <p className="text-[0.95rem] text-[var(--color-text-muted)] font-light leading-[1.7]">
-                  {rev.text}
+                  {rev.comment}
                 </p>
               </motion.div>
             ))}

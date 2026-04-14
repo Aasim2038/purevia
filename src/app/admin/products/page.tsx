@@ -13,17 +13,22 @@ export default function AdminProductsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<any | null>(null);
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null]);
+  const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [editProductId, setEditProductId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     category: 'Skin Care',
     stock: '',
-    description: ''
+    description: '',
+    ingredients: '',
+    howToUse: ''
   });
 
   const categoryPresets: Record<string, { icon: string, bg: string }> = {
@@ -55,20 +60,38 @@ export default function AdminProductsPage() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleImageChange = (slotIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    const preview = URL.createObjectURL(file);
+
+    setImageFiles((prev) => {
+      const next = [...prev];
+      next[slotIndex] = file;
+      return next;
+    });
+    setImagePreviews((prev) => {
+      const next = [...prev];
+      next[slotIndex] = preview;
+      return next;
+    });
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const selected = e.target.files[0];
+    setVideoFile(selected);
+    setVideoPreview(URL.createObjectURL(selected));
   };
 
 
 
   const clearForm = () => {
-    setFormData({ name: '', price: '', category: 'Skin Care', stock: '', description: '' });
-    setImageFile(null);
-    setImagePreview(null);
+    setFormData({ name: '', price: '', category: 'Skin Care', stock: '', description: '', ingredients: '', howToUse: '' });
+    setImageFiles([null, null]);
+    setImagePreviews([null, null]);
+    setVideoFile(null);
+    setVideoPreview(null);
     setEditProductId(null);
     setIsModalOpen(false);
   };
@@ -79,15 +102,16 @@ export default function AdminProductsPage() {
       price: product.price ? String(product.price) : '',
       category: product.category || 'Skin Care',
       stock: product.stock !== undefined && product.stock !== null ? String(product.stock) : '0',
-      description: product.description || ''
+      description: product.description || '',
+      ingredients: product.ingredients || '',
+      howToUse: product.howToUse || ''
     });
     setEditProductId(product.id);
-    if (product.images && product.images.length > 0) {
-      setImagePreview(product.images[0]);
-    } else {
-      setImagePreview(null);
-    }
-    setImageFile(null); // Clear any previously selected file
+    const existingImages = Array.isArray(product.images) ? product.images : [];
+    setImagePreviews([existingImages[0] || null, existingImages[1] || null]);
+    setVideoPreview(product.videoUrl || null);
+    setImageFiles([null, null]);
+    setVideoFile(null);
     setIsModalOpen(true);
   };
 
@@ -122,39 +146,64 @@ export default function AdminProductsPage() {
       toast.error('Name and Price are required.');
       return;
     }
-    if (!editProductId && !imageFile) {
-      toast.error('Image is required for new products.');
+    const selectedImageCount = imageFiles.filter(Boolean).length;
+    const existingImageCount = imagePreviews.filter(Boolean).length;
+    if (!editProductId && selectedImageCount === 0 && existingImageCount === 0) {
+      toast.error('At least one image is required for new products.');
       return;
     }
 
     setIsSubmitting(true);
-    let imageUrl = '';
+    let uploadedImageUrls: string[] = [];
+    let uploadedVideoUrl: string | null = null;
 
     try {
-      if (imageFile) {
-        // 1. Upload to Supabase Storage
-        const fileExt = imageFile.name.split('.').pop();
+      const currentImageUrls = [...imagePreviews];
+      for (let i = 0; i < imageFiles.length; i += 1) {
+        const file = imageFiles[i];
+        if (!file) continue;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}_${i}.${fileExt}`;
+        const filePath = `public/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+        .from('product-images')
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+          .getPublicUrl(filePath);
+        currentImageUrls[i] = publicUrlData.publicUrl;
+      }
+      uploadedImageUrls = currentImageUrls.filter((url): url is string => Boolean(url));
+
+      if (videoFile) {
+        const fileExt = videoFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `public/${fileName}`;
 
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, imageFile);
+        const { error: uploadError } = await supabase.storage
+        .from('product-videos')
+          .upload(filePath, videoFile);
 
-        if (uploadError) {
-          throw uploadError;
-        }
+        if (uploadError) throw uploadError;
 
-        // 2. Get Public URL
         const { data: publicUrlData } = supabase.storage
-          .from('product-images')
+        .from('product-videos')
           .getPublicUrl(filePath);
-        
-        imageUrl = publicUrlData.publicUrl;
+        uploadedVideoUrl = publicUrlData.publicUrl;
+      } else {
+        uploadedVideoUrl = videoPreview;
       }
 
-      const method = editProductId ? 'PUT' : 'POST';
-      const bodyPayload = { ...formData, ...(imageUrl && { imageUrl }), ...(editProductId && { id: editProductId }) };
+      const method = editProductId ? 'PATCH' : 'POST';
+      const bodyPayload = {
+        ...formData,
+        imageUrls: uploadedImageUrls,
+        videoUrl: uploadedVideoUrl,
+        ...(editProductId && { id: editProductId }),
+      };
 
       // 3. Save to DB Action
       const res = await fetch('/api/admin/products', {
@@ -290,28 +339,61 @@ export default function AdminProductsPage() {
             </div>
             
             <div className="p-8 space-y-5">
-              <div className="flex gap-5">
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-[120px] h-[120px] shrink-0 bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] gap-2 overflow-hidden relative"
-                >
-                  {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                      <span className="text-[0.65rem] uppercase tracking-[0.1em] font-medium">Upload</span>
-                    </>
-                  )}
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleImageChange} 
-                    accept="image/*" 
-                    className="hidden" 
-                  />
+              <div className="space-y-3">
+                <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)]">
+                  Media Uploads (2 Images + 1 Video)
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {[0, 1].map((slotIndex) => (
+                    <button
+                      key={`image-slot-${slotIndex}`}
+                      type="button"
+                      onClick={() => imageInputRefs.current[slotIndex]?.click()}
+                      className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex flex-col items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] gap-2 overflow-hidden"
+                    >
+                      {imagePreviews[slotIndex] ? (
+                        <img src={imagePreviews[slotIndex] || ''} alt={`Image ${slotIndex + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                          <span className="text-[0.58rem] uppercase tracking-[0.08em] font-medium">Image {slotIndex + 1}</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        ref={(el) => { imageInputRefs.current[slotIndex] = el; }}
+                        onChange={(e) => handleImageChange(slotIndex, e)}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => videoInputRef.current?.click()}
+                    className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] overflow-hidden"
+                  >
+                    {videoPreview ? (
+                      <video src={videoPreview} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[0.58rem] uppercase tracking-[0.08em] font-medium">Video</span>
+                    )}
+                  </button>
                 </div>
-                
+                <input
+                  type="file"
+                  ref={videoInputRef}
+                  onChange={handleVideoChange}
+                  accept="video/*"
+                  className="hidden"
+                />
+              </div>
+
+              {videoPreview && (
+                <video src={videoPreview} controls className="w-full rounded-xl border border-[#EAE6DF] max-h-[220px]" />
+              )}
+
+              <div className="flex gap-5">
                 <div className="flex-1 space-y-4">
                   <div>
                     <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">Product Name</label>
@@ -342,6 +424,16 @@ export default function AdminProductsPage() {
               <div>
                 <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">Description</label>
                 <textarea name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="Brief product description..." className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors resize-none"></textarea>
+              </div>
+
+              <div>
+                <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">Ingredients</label>
+                <textarea name="ingredients" value={formData.ingredients} onChange={handleChange} rows={3} placeholder="List ingredients..." className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors resize-none"></textarea>
+              </div>
+
+              <div>
+                <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">How to Use</label>
+                <textarea name="howToUse" value={formData.howToUse} onChange={handleChange} rows={3} placeholder="Usage instructions..." className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors resize-none"></textarea>
               </div>
             </div>
 

@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 type CheckoutStep = 'shipping' | 'payment';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, clearCart } = useCart();
+  const { data: session } = useSession();
+  const { items, clearCart, isCartHydrated } = useCart();
   const [activeStep, setActiveStep] = useState<CheckoutStep>('shipping');
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
   
@@ -16,6 +18,7 @@ export default function CheckoutPage() {
   const [geoLoading, setGeoLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [geoError, setGeoError] = useState("");
+  const [showManualLocation, setShowManualLocation] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -27,9 +30,37 @@ export default function CheckoutPage() {
   });
   const [paymentMethod, setPaymentMethod] = useState("card");
 
-  const handleGeolocation = () => {
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const loadSavedAddress = async () => {
+      try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+        if (!res.ok || !data.user) return;
+
+        setFormData((prev) => ({
+          ...prev,
+          firstName: prev.firstName || (data.user.name ? String(data.user.name).split(' ')[0] : ''),
+          lastName: prev.lastName || (data.user.name ? String(data.user.name).split(' ').slice(1).join(' ') : ''),
+          email: prev.email || data.user.email || '',
+          phone: prev.phone || data.user.phone || '',
+          address: prev.address || data.user.address || '',
+          city: prev.city || data.user.city || '',
+          pin: prev.pin || data.user.pinCode || '',
+        }));
+      } catch (error) {
+        console.error('Failed to load profile address:', error);
+      }
+    };
+
+    loadSavedAddress();
+  }, [session]);
+
+  const handleLocationClick = () => {
     setGeoLoading(true);
     setGeoError("");
+    setShowManualLocation(false);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -39,13 +70,28 @@ export default function CheckoutPage() {
           });
           setGeoLoading(false);
         },
-        () => {
-          setGeoError("Location access denied or unavailable.");
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) {
+            setGeoError("Location permission denied. Please allow location access in browser settings.");
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            setGeoError("Location unavailable. Please ensure GPS/network is enabled.");
+          } else if (err.code === err.TIMEOUT) {
+            setGeoError("Location request timed out. Try again in an open area.");
+          } else {
+            setGeoError("Could not fetch location right now.");
+          }
+          setShowManualLocation(true);
           setGeoLoading(false);
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 15000,
+          maximumAge: 0,
         }
       );
     } else {
       setGeoError("Geolocation is not supported by your browser.");
+      setShowManualLocation(true);
       setGeoLoading(false);
     }
   };
@@ -57,7 +103,12 @@ export default function CheckoutPage() {
   const isFormValid = items.length > 0 && 
     formData.firstName.trim() !== '' && 
     formData.phone.trim() !== '' && 
-    formData.address.trim() !== '';
+    formData.address.trim() !== '' &&
+    formData.city.trim() !== '' &&
+    formData.pin.trim() !== '';
+  const hasStockViolation = items.some(
+    (item) => typeof item.maxStock === "number" && item.quantity > item.maxStock
+  );
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,18 +117,48 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!isFormValid) {
       setActiveStep('shipping');
       return;
     }
+    if (hasStockViolation) {
+      setGeoError("One or more items exceed available stock. Please update your cart quantities.");
+      return;
+    }
     setIsSubmitting(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          paymentMethod,
+          lat: coords?.lat,
+          lng: coords?.lng,
+          shippingAmount: shipping,
+          grandTotal: total,
+          items: items.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to place order');
+      }
+
+      const data = await res.json();
       clearCart();
-      router.push('/checkout/success');
-    }, 1500);
+      router.push(`/checkout/success?orderId=${encodeURIComponent(data.orderId)}`);
+    } catch (error) {
+      console.error(error);
+      setGeoError('Could not place order. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -92,7 +173,9 @@ export default function CheckoutPage() {
   // Shared generic summary details to avoid duplication
   const renderSummaryDetails = (isMobile: boolean = false) => (
     <div className={`flex flex-col gap-6 ${isMobile ? 'pt-6 border-t border-[rgba(138,158,126,0.15)] mt-4' : ''}`}>
-      {items.length === 0 ? (
+      {!isCartHydrated ? (
+        <div className="text-[0.95rem] text-[var(--color-text-muted)] font-light italic text-center py-6">Loading your cart...</div>
+      ) : items.length === 0 ? (
         <div className="text-[0.95rem] text-[var(--color-text-muted)] font-light italic text-center py-6">Your cart is perfectly pure... but empty.</div>
       ) : (
         <div className="flex flex-col gap-6 max-h-[350px] overflow-y-auto overflow-x-hidden pt-3 pr-4 pl-1">
@@ -100,8 +183,10 @@ export default function CheckoutPage() {
             <div key={item.id} className="flex justify-between items-center gap-6">
               <div className="flex items-center gap-5">
                 <div className="relative mt-2">
-                  <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] flex items-center justify-center text-[18px]">
-                     {item.name.charAt(0)}
+                  <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] overflow-hidden bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)]">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                    ) : null}
                   </div>
                   <span className="absolute -top-3 -right-3 w-[22px] h-[22px] flex items-center justify-center bg-[var(--color-sage-dark)] text-white text-[0.65rem] rounded-full shadow-sm z-10">{item.quantity}</span>
                 </div>
@@ -128,10 +213,15 @@ export default function CheckoutPage() {
         <span className="font-medium text-[1.1rem] md:text-[1.2rem] uppercase tracking-[0.1em] text-[var(--color-text)]">Total</span>
         <span className="font-serif text-[2rem] md:text-[2.4rem] font-light text-[var(--color-earth)] italic leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
       </div>
+      {hasStockViolation && (
+        <div className="text-[0.72rem] uppercase tracking-[0.08em] text-red-600">
+          Stock changed. Please reduce quantity in cart before checkout.
+        </div>
+      )}
     </div>
   );
 
-  const BRAND_NAME = "{BRAND_NAME}";
+  const BRAND_NAME = "{Puroable}";
 
   return (
     <main className="bg-[var(--color-cream)] pt-[90px] pb-40 lg:pb-32 min-h-screen select-none relative">
@@ -227,7 +317,7 @@ export default function CheckoutPage() {
                             <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Full Address</label>
                             <button 
                               type="button" 
-                              onClick={handleGeolocation}
+                              onClick={handleLocationClick}
                               disabled={geoLoading}
                               className="text-[0.75rem] bg-[rgba(138,158,126,0.1)] hover:bg-[rgba(138,158,126,0.2)] active:scale-95 text-[var(--color-sage-dark)] font-medium px-4 py-2 rounded-full transition-all flex items-center gap-1.5 focus:outline-none shadow-sm"
                             >
@@ -236,7 +326,23 @@ export default function CheckoutPage() {
                             </button>
                           </div>
                           {coords && <div className="text-[0.75rem] text-[var(--color-sage-dark)] font-medium mb-1">Coordinates stored securely for delivery routing.</div>}
-                          {geoError && <div className="text-[0.75rem] text-red-500/80 mb-1">{geoError}</div>}
+                          {geoError && (
+                            <div className="mb-1">
+                              <div className="text-[0.75rem] text-red-500/80">{geoError}</div>
+                              <button
+                                type="button"
+                                onClick={() => { setShowManualLocation(true); setGeoError(""); }}
+                                className="text-[0.72rem] text-[var(--color-sage-dark)] underline mt-1"
+                              >
+                                Use Manual Entry
+                              </button>
+                            </div>
+                          )}
+                          {showManualLocation && (
+                            <div className="text-[0.75rem] text-[var(--color-text-muted)] mb-1">
+                              Manual entry enabled. Please continue typing your full address below.
+                            </div>
+                          )}
                           <textarea name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full bg-[var(--color-cream)] border border-[rgba(138,158,126,0.2)] px-4 py-3.5 rounded-[12px] focus:outline-none focus:border-[var(--color-sage-dark)] transition-all text-[0.95rem] resize-none"></textarea>
                         </div>
 
@@ -342,8 +448,8 @@ export default function CheckoutPage() {
 
               <button 
                 onClick={handlePlaceOrder}
-                disabled={!isFormValid || isSubmitting}
-                className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
+                disabled={!isFormValid || hasStockViolation || isSubmitting}
+                className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
               >
                 {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
               </button>
@@ -361,8 +467,8 @@ export default function CheckoutPage() {
         </div>
         <button 
           onClick={handlePlaceOrder} 
-          disabled={!isFormValid || isSubmitting} 
-          className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
+          disabled={!isFormValid || hasStockViolation || isSubmitting} 
+          className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
         >
           {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
         </button>

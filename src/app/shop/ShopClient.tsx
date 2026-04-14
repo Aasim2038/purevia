@@ -9,15 +9,22 @@ const categories = ["All", "Skin Care", "Hair Care", "Body Care"];
 
 interface ShopClientProps {
   initialProducts: ProductType[];
+  initialCategory?: string;
+  initialTag?: string;
 }
 
-export default function ShopClient({ initialProducts }: ShopClientProps) {
+export default function ShopClient({ initialProducts, initialCategory, initialTag }: ShopClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState(categories.includes(initialCategory || "") ? (initialCategory as string) : "All");
+  const [selectedTag, setSelectedTag] = useState(initialTag || "All");
   const [sortOption, setSortOption] = useState("Default");
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
+
+    if (selectedTag !== "All") {
+      result = result.filter(p => p.badge === selectedTag);
+    }
 
     if (selectedCategory !== "All") {
       result = result.filter(p => p.category === selectedCategory);
@@ -35,7 +42,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
     }
 
     return result;
-  }, [initialProducts, searchQuery, selectedCategory, sortOption]);
+  }, [initialProducts, searchQuery, selectedCategory, selectedTag, sortOption]);
 
   return (
     <div className="min-h-screen bg-[var(--color-cream)] flex flex-col font-sans">
@@ -63,6 +70,11 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
           >
             Shop <em className="italic text-[var(--color-sage-dark)]">All</em>
           </motion.h1>
+          {selectedTag !== "All" && (
+            <div className="mt-4 text-[0.72rem] tracking-[0.18em] uppercase text-[var(--color-sage-dark)]">
+              Filter: {selectedTag}
+            </div>
+          )}
         </div>
 
         {/* Filters & Search Toolbar */}
@@ -96,6 +108,16 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
                 {cat}
               </button>
             ))}
+          </div>
+
+          {/* Tag filter quick pill */}
+          <div className="w-full xl:w-auto flex justify-center">
+            <button
+              onClick={() => setSelectedTag(selectedTag === "All" ? "Trending" : "All")}
+              className={`px-5 py-2.5 rounded-full text-[0.75rem] tracking-[0.1em] uppercase transition-all duration-300 border ${selectedTag !== "All" ? 'bg-[var(--color-sage-dark)] text-white border-[var(--color-sage-dark)]' : 'bg-transparent text-[var(--color-text-muted)] border-[rgba(196,168,130,0.3)] hover:border-[var(--color-sage-dark)]'}`}
+            >
+              {selectedTag !== "All" ? `${selectedTag} Active` : "Show Trending"}
+            </button>
           </div>
 
           {/* Sort */}
@@ -151,7 +173,7 @@ export default function ShopClient({ initialProducts }: ShopClientProps) {
               <h3 className="font-serif text-[1.8rem] text-[var(--color-text)] mb-2" style={{ fontFamily: 'var(--font-cormorant)' }}>No products found</h3>
               <p className="text-[var(--color-text-muted)] font-light">We couldn't find anything matching your criteria. Try adjusting your filters or search.</p>
               <button 
-                onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setSortOption("Default"); }}
+                onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setSelectedTag("All"); setSortOption("Default"); }}
                 className="mt-6 px-6 py-2 border border-[var(--color-sage-dark)] text-[var(--color-sage-dark)] rounded-full text-[0.8rem] tracking-[0.1em] uppercase hover:bg-[var(--color-sage-dark)] hover:text-white transition-colors"
               >
                 Clear Filters

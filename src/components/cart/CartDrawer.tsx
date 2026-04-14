@@ -8,6 +8,7 @@ export default function CartDrawer() {
   const { isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart } = useCart();
   
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const fallbackImage = "linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)";
 
   return (
     <AnimatePresence>
@@ -47,8 +48,13 @@ export default function CartDrawer() {
                 <div className="flex flex-col gap-8">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-5 items-center bg-white p-4 rounded-[16px] border border-[rgba(138,158,126,0.1)] shadow-[0_4px_10px_rgba(138,158,126,0.02)]">
-                      {/* Fake Image Placeholder */}
-                      <div className="w-[85px] h-[85px] rounded-[10px] shrink-0 bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)]"></div>
+                      <div className="w-[85px] h-[85px] rounded-[10px] shrink-0 overflow-hidden border border-[rgba(138,158,126,0.2)]">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full" style={{ background: fallbackImage }} />
+                        )}
+                      </div>
                       
                       <div className="flex-1 flex flex-col justify-center">
                         <div className="flex justify-between gap-2 items-start mb-1">
@@ -61,8 +67,19 @@ export default function CartDrawer() {
                         <div className="flex items-center bg-[var(--color-cream)] rounded-full border border-[rgba(138,158,126,0.2)] h-8 w-fit">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-l-full focus:outline-none">-</button>
                           <span className="text-[0.8rem] font-medium w-6 text-center text-[var(--color-text)]">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-r-full focus:outline-none">+</button>
+                          <button
+                            disabled={typeof item.maxStock === "number" && item.quantity >= item.maxStock}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-r-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            +
+                          </button>
                         </div>
+                        {typeof item.maxStock === "number" && item.quantity >= item.maxStock ? (
+                          <div className="text-[0.62rem] uppercase tracking-[0.08em] text-[#D48806] mt-2">
+                            Max stock reached
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   ))}

@@ -1,16 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
+  imageUrl?: string | null;
+  maxStock?: number;
   quantity: number;
 }
 
 interface CartContextType {
   items: CartItem[];
+  isCartHydrated: boolean;
   addToCart: (item: Omit<CartItem, "quantity">, quantity: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -21,20 +24,66 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const CART_STORAGE_KEY = "purevia_cart_items";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartHydrated, setIsCartHydrated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const normalized = parsed
+        .filter((item) => item && typeof item === "object")
+        .map((item) => ({
+          id: String(item.id ?? ""),
+          name: String(item.name ?? ""),
+          price: Number(item.price ?? 0),
+          quantity: Number(item.quantity ?? 0),
+          imageUrl: item.imageUrl ? String(item.imageUrl) : null,
+          maxStock: Number(item.maxStock) > 0 ? Number(item.maxStock) : undefined,
+        }))
+        .map((item) => ({
+          ...item,
+          quantity: item.maxStock ? Math.min(item.quantity, item.maxStock) : item.quantity,
+        }))
+        .filter((item) => item.id && item.name && item.price >= 0 && item.quantity > 0);
+      setItems(normalized);
+    } catch (error) {
+      console.error("Failed to load cart from localStorage:", error);
+    } finally {
+      setIsCartHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !isCartHydrated) return;
+    try {
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (error) {
+      console.error("Failed to persist cart to localStorage:", error);
+    }
+  }, [items, isCartHydrated]);
 
   const addToCart = (item: Omit<CartItem, "quantity">, quantity: number) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
+      const safeRequestedQty = Math.max(1, Number(quantity) || 1);
+      const cap = item.maxStock && item.maxStock > 0 ? item.maxStock : undefined;
       if (existing) {
+        const mergedCap = cap ?? existing.maxStock;
+        const nextQty = existing.quantity + safeRequestedQty;
+        const clampedQty = mergedCap ? Math.min(nextQty, mergedCap) : nextQty;
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i
+          i.id === item.id ? { ...i, maxStock: mergedCap, quantity: clampedQty } : i
         );
       }
-      return [...prev, { ...item, quantity }];
+      return [...prev, { ...item, quantity: cap ? Math.min(safeRequestedQty, cap) : safeRequestedQty }];
     });
     setIsCartOpen(true); // Open the drawer immediately when adding to cart
   };
@@ -48,8 +97,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeFromCart(id);
       return;
     }
-    setItems((prev) => 
-      prev.map(item => item.id === id ? { ...item, quantity } : item)
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        const cap = item.maxStock && item.maxStock > 0 ? item.maxStock : undefined;
+        const safeQty = cap ? Math.min(quantity, cap) : quantity;
+        return { ...item, quantity: safeQty };
+      })
     );
   };
 
@@ -60,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, isCartOpen, setIsCartOpen }}>
+    <CartContext.Provider value={{ items, isCartHydrated, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, isCartOpen, setIsCartOpen }}>
       {children}
     </CartContext.Provider>
   );

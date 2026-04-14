@@ -2,15 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function CheckoutSuccessPage() {
+  const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
-    // Generate simple random order ID for display
+    const fromQuery = searchParams.get('orderId');
+    if (fromQuery) {
+      setOrderId(fromQuery);
+      return;
+    }
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     setOrderId(`PUR-${randomNum}`);
-  }, []);
+  }, [searchParams]);
 
   return (
     <main className="bg-[var(--color-cream)] min-h-screen flex items-center justify-center p-6 select-none relative overflow-hidden">

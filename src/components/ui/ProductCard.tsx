@@ -14,6 +14,8 @@ export interface ProductType {
   badge?: string | null;
   category: string;
   bg: string;
+  stock?: number;
+  images?: string[];
   imageUrl?: string | null;
 }
 
@@ -31,12 +33,21 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
   const numericPrice = typeof product.price === 'string' 
     ? parseInt(product.price.replace(/[^0-9]/g, ''), 10) 
     : product.price;
+  const thumbnail = Array.isArray(product.images) && product.images.length > 0
+    ? product.images[0]
+    : product.imageUrl;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    addToCart({ id: product.id || `temp-${product.name}`, name: product.name, price: numericPrice || 0 }, 1);
+    addToCart({
+      id: product.id || `temp-${product.name}`,
+      name: product.name,
+      price: numericPrice || 0,
+      imageUrl: thumbnail || null,
+      maxStock: typeof product.stock === "number" && product.stock > 0 ? product.stock : undefined,
+    }, 1);
     
     setIsAdded(true);
     setTimeout(() => {
@@ -58,8 +69,8 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
       
       <div className="h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
         <div className="absolute inset-0 z-0 opacity-80 mix-blend-multiply" style={{ background: product.bg }} />
-        {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" />
+        {thumbnail ? (
+          <img src={thumbnail} alt={product.name} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" />
         ) : (
           <div className="text-[5rem] relative z-[1] drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110 group-hover:-translate-y-1">
             {product.icon}

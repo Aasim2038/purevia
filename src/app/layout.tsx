@@ -5,6 +5,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
 import CartDrawer from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/context/CartContext";
+import AuthProvider from "@/components/providers/AuthProvider";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -21,8 +22,43 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Puroable — 100% Chemical Free",
-  description: "Premium chemical-free cosmetic brand landing page",
+  title: {
+    default: "Puroable | Premium Chemical-Free Beauty",
+    template: "%s | Puroable",
+  },
+  description:
+    "Puroable offers premium chemical-free skincare, haircare and bodycare with a luxury, nature-first experience.",
+  keywords: [
+    "Puroable",
+    "chemical free skincare",
+    "premium beauty",
+    "natural cosmetics",
+    "organic personal care",
+    "luxury skincare India",
+  ],
+  openGraph: {
+    title: "Puroable | Premium Chemical-Free Beauty",
+    description:
+      "Discover premium chemical-free skincare, haircare and bodycare crafted for modern luxury wellness.",
+    url: "https://puroable.com",
+    siteName: "Puroable",
+    type: "website",
+    images: [
+      {
+        url: "https://puroable.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Puroable Premium Beauty",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Puroable | Premium Chemical-Free Beauty",
+    description:
+      "Premium chemical-free skincare, haircare and bodycare with a luxury-first shopping experience.",
+    images: ["https://puroable.com/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({
@@ -33,12 +69,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
-        <CartProvider>
-          <CustomCursor />
-          <Navbar />
-          <CartDrawer />
-          {children}
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <CustomCursor />
+            <Navbar />
+            <CartDrawer />
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
