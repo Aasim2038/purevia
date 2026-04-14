@@ -1,4 +1,7 @@
 "use client";
+
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useRef } from 'react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { supabase } from '@/lib/supabaseClient';
