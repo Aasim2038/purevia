@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState("");
