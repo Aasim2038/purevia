@@ -1,12 +1,13 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+export const dynamic = 'force-dynamic';
+
+import React, { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getShortOrderId } from "@/lib/orderId";
-
-export const dynamic = 'force-dynamic';
 
 type ProfileOrder = {
   id: string;
@@ -29,7 +30,8 @@ type ProfileOrder = {
   }>;
 };
 
-export default function ProfilePage() {
+// Main content component that uses dynamic hooks like useSearchParams()
+function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isOnboarding = searchParams.get("onboarding") === "1";
@@ -420,5 +422,20 @@ export default function ProfilePage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Wrapper component that provides Suspense boundary for dynamic hooks
+export default function ProfilePage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-[var(--color-cream)] pt-32 px-6 flex items-center justify-center">
+          <div className="text-[var(--color-text-muted)]">Loading profile...</div>
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }
