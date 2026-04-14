@@ -46,10 +46,14 @@ export default async function AdminDashboardPage() {
       take: 5,
       select: {
         id: true,
-        customerName: true,
         totalAmount: true,
         status: true,
         createdAt: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
       },
     }),
     prisma.order.findMany({
@@ -72,7 +76,15 @@ export default async function AdminDashboardPage() {
     }),
     prisma.order.findFirst({
       orderBy: { createdAt: "desc" },
-      select: { id: true, customerName: true, createdAt: true },
+      select: {
+        id: true,
+        createdAt: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
     }),
     prisma.orderItem.groupBy({
       by: ["productId"],
@@ -89,7 +101,7 @@ export default async function AdminDashboardPage() {
       ? [
           {
             id: `order-${latestOrder.id}`,
-            text: `New Order ${getShortOrderId(latestOrder.id)} received`,
+            text: `New Order ${getShortOrderId(latestOrder.id)} received${latestOrder.user?.name ? ` by ${latestOrder.user.name}` : ""}`,
             createdAt: latestOrder.createdAt.toISOString(),
           },
         ]
@@ -248,7 +260,7 @@ export default async function AdminDashboardPage() {
                     {recentOrders.map((order) => (
                       <tr key={order.id} className="border-b border-[#F5F3ED] last:border-0 hover:bg-[#FAF9F7]">
                         <td className="px-6 py-4 font-serif font-medium">{getShortOrderId(order.id)}</td>
-                        <td className="px-6 py-4">{order.customerName}</td>
+                        <td className="px-6 py-4">{order.user?.name || "Guest Customer"}</td>
                         <td className="px-6 py-4 font-serif">{formatCurrency(order.totalAmount)}</td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex px-2.5 py-1 rounded-full text-[0.64rem] uppercase tracking-[0.08em] font-semibold ${statusClassMap[order.status as DashboardStatus]}`}>
