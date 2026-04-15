@@ -4,8 +4,8 @@ import ShopClient from './ShopClient';
 import { ProductType } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/LoadingSkeleton';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-static';
+export const revalidate = 3600;
 
 type ShopPageProps = {
   searchParams: Promise<{
@@ -28,17 +28,23 @@ const categoryPresets: Record<string, { icon: string, bg: string }> = {
 };
 
 async function ShopProductsStream({ category, tag }: { category?: string; tag?: string }) {
-  // Fetch products and best sellers in parallel
+  // Fetch products and best sellers in parallel with caching
   const [dbProducts, bestSellerRows] = await Promise.all([
-    prisma.product.findMany({
-      orderBy: { createdAt: "desc" },
-    }),
-    (prisma as any).orderItem.groupBy({
-      by: ['productId'],
-      _sum: { quantity: true },
-      orderBy: { _sum: { quantity: 'desc' } },
-      take: 8,
-    }).catch(() => []),
+    prisma.product.findMany(
+      {
+        orderBy: { createdAt: "desc" },
+      },
+      { next: { revalidate: 3600 } } as any
+    ),
+    (prisma as any).orderItem.groupBy(
+      {
+        by: ['productId'],
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: 'desc' } },
+        take: 8,
+      },
+      { next: { revalidate: 1800 } } as any
+    ).catch(() => []),
   ]);
 
   const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));

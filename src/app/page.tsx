@@ -76,17 +76,23 @@ async function mapProductsWithTags(dbProducts: any[], bestSellerIds: Set<string>
 }
 
 async function ProductsStream() {
-  // Fetch products and best sellers in parallel
+  // Fetch products and best sellers in parallel with caching
   const [dbProducts, bestSellerRows] = await Promise.all([
-    prisma.product.findMany({
-      orderBy: { createdAt: "desc" },
-    }),
-    (prisma as any).orderItem.groupBy({
-      by: ["productId"],
-      _sum: { quantity: true },
-      orderBy: { _sum: { quantity: "desc" } },
-      take: 8,
-    }).catch(() => []),
+    prisma.product.findMany(
+      {
+        orderBy: { createdAt: "desc" },
+      },
+      { next: { revalidate: 3600 } } as any
+    ),
+    (prisma as any).orderItem.groupBy(
+      {
+        by: ["productId"],
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: "desc" } },
+        take: 8,
+      },
+      { next: { revalidate: 1800 } } as any
+    ).catch(() => []),
   ]);
 
   const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
@@ -181,8 +187,8 @@ async function ProductsStream() {
   );
 }
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "force-static";
+export const revalidate = 3600;
 
 export default function Home() {
   return (
