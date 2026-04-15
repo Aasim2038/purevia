@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { supabase } from '@/lib/supabaseClient';
 import { Toaster, toast } from 'sonner';
@@ -288,9 +289,9 @@ export default function AdminProductsPage() {
                       return (
                         <tr key={product.id} className="border-b border-[#F5F3ED] hover:bg-[#FAF9F7] transition-colors last:border-0 relative group">
                           <td className="px-8 py-4">
-                            <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-2xl shadow-sm border border-[#EAE6DF] overflow-hidden" style={{ background: theme.bg }}>
+                            <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-2xl shadow-sm border border-[#EAE6DF] overflow-hidden relative" style={{ background: theme.bg }}>
                               {product.images && product.images.length > 0 ? (
-                                <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                <Image src={product.images[0]} alt={product.name} fill className="w-full h-full object-cover" />
                               ) : (
                                 theme.icon
                               )}
@@ -352,10 +353,10 @@ export default function AdminProductsPage() {
                       key={`image-slot-${slotIndex}`}
                       type="button"
                       onClick={() => imageInputRefs.current[slotIndex]?.click()}
-                      className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex flex-col items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] gap-2 overflow-hidden"
+                      className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex flex-col items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] gap-2 overflow-hidden relative"
                     >
                       {imagePreviews[slotIndex] ? (
-                        <img src={imagePreviews[slotIndex] || ''} alt={`Image ${slotIndex + 1}`} className="w-full h-full object-cover" />
+                        <Image src={imagePreviews[slotIndex] || ''} alt={`Image ${slotIndex + 1}`} fill className="w-full h-full object-cover" />
                       ) : (
                         <>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -463,8 +464,8 @@ export default function AdminProductsPage() {
             <div className="p-8 text-center flex flex-col items-center">
               <div className="flex flex-col items-center justify-center mb-5">
                 {productToDelete?.images && productToDelete.images.length > 0 ? (
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-[#EAE6DF] mb-3">
-                    <img src={productToDelete.images[0]} alt={productToDelete.name} className="w-full h-full object-cover" />
+                    <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm border border-[#EAE6DF] mb-3 relative">
+                      <Image src={productToDelete.images[0]} alt={productToDelete.name} fill className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <div className="w-14 h-14 bg-[#FCF3F3] text-red-600 rounded-full flex flex-col items-center justify-center mb-3 border border-red-100">

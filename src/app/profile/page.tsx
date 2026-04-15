@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { getShortOrderId } from "@/lib/orderId";
 
 type ProfileOrder = {
@@ -221,7 +222,7 @@ function ProfileContent() {
                     <div key={order.id} className="bg-white rounded-xl border border-[rgba(196,168,130,0.2)] px-4 py-3 flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl overflow-hidden border border-[rgba(196,168,130,0.25)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] shrink-0">
                         {order.orderItems[0]?.product?.images?.[0] ? (
-                          <img src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].productName} className="w-full h-full object-cover" />
+                          <Image src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].productName} fill className="w-full h-full object-cover" />
                         ) : null}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -394,8 +395,8 @@ function ProfileContent() {
                   {selectedOrder.orderItems.map((item) => (
                     <div key={item.id} className="flex items-center justify-between bg-[#FAF9F7] rounded-xl border border-[rgba(196,168,130,0.2)] p-3.5">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-lg overflow-hidden border border-[rgba(196,168,130,0.25)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] shrink-0">
-                          {item.product?.images?.[0] ? <img src={item.product.images[0]} alt={item.productName} className="w-full h-full object-cover" /> : null}
+                        <div className="w-11 h-11 rounded-lg overflow-hidden border border-[rgba(196,168,130,0.25)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] shrink-0 relative">
+                          {item.product?.images?.[0] ? <Image src={item.product.images[0]} alt={item.productName} fill className="w-full h-full object-cover" /> : null}
                         </div>
                         <div className="min-w-0">
                           <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)] truncate block">

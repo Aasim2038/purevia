@@ -273,8 +273,8 @@ export default function AdminOrdersPage() {
                   {selectedOrder.orderItems.map((item) => (
                     <div key={item.id} className="flex items-center justify-between bg-white rounded-xl border border-[#EAE6DF] p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-lg overflow-hidden border border-[#EAE6DF] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)]">
-                          {item.product?.images?.[0] ? <img src={item.product.images[0]} alt={item.productName} className="w-full h-full object-cover" /> : null}
+                        <div className="w-11 h-11 rounded-lg overflow-hidden border border-[#EAE6DF] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] relative">
+                          {item.product?.images?.[0] ? <Image src={item.product.images[0]} alt={item.productName} fill className="w-full h-full object-cover" /> : null}
                         </div>
                         <div>
                           <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)]">{item.productName}</Link>

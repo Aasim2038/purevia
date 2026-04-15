@@ -3,6 +3,8 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
@@ -186,9 +188,9 @@ export default function CheckoutPage() {
             <div key={item.id} className="flex justify-between items-center gap-6">
               <div className="flex items-center gap-5">
                 <div className="relative mt-2">
-                  <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] overflow-hidden bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)]">
+                  <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] overflow-hidden bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] relative">
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      <Image src={item.imageUrl} alt={item.name} fill className="w-full h-full object-cover" />
                     ) : null}
                   </div>
                   <span className="absolute -top-3 -right-3 w-[22px] h-[22px] flex items-center justify-center bg-[var(--color-sage-dark)] text-white text-[0.65rem] rounded-full shadow-sm z-10">{item.quantity}</span>

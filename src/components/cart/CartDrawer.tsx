@@ -48,9 +48,9 @@ export default function CartDrawer() {
                 <div className="flex flex-col gap-8">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-5 items-center bg-white p-4 rounded-[16px] border border-[rgba(138,158,126,0.1)] shadow-[0_4px_10px_rgba(138,158,126,0.02)]">
-                      <div className="w-[85px] h-[85px] rounded-[10px] shrink-0 overflow-hidden border border-[rgba(138,158,126,0.2)]">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+<div className="w-[85px] h-[85px] rounded-[10px] shrink-0 overflow-hidden border border-[rgba(138,158,126,0.2)] relative">
+                    {item.imageUrl ? (
+                      <Image src={item.imageUrl} alt={item.name} fill className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full" style={{ background: fallbackImage }} />
                         )}

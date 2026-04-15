@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import prisma from '@/lib/prisma';
 import ShopClient from './ShopClient';
 import { ProductType } from '@/components/ui/ProductCard';
+import { ProductGridSkeleton } from '@/components/ui/LoadingSkeleton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -26,19 +27,21 @@ const categoryPresets: Record<string, { icon: string, bg: string }> = {
   'Body Care': { icon: '🪵', bg: 'linear-gradient(135deg, #F5EFEB, #E0CDBA)' },
 };
 
-export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const { category, tag } = await searchParams;
-  const bestSellerRows = await (prisma as any).orderItem.groupBy({
-    by: ['productId'],
-    _sum: { quantity: true },
-    orderBy: { _sum: { quantity: 'desc' } },
-    take: 8,
-  }).catch(() => []);
-  const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
+async function ShopProductsStream({ category, tag }: { category?: string; tag?: string }) {
+  // Fetch products and best sellers in parallel
+  const [dbProducts, bestSellerRows] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    (prisma as any).orderItem.groupBy({
+      by: ['productId'],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+      take: 8,
+    }).catch(() => []),
+  ]);
 
-  const dbProducts = await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' },
-  });
+  const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
 
   const mappedProducts: ProductType[] = dbProducts.map((p: any) => {
     const preset = categoryPresets[p.category] || { icon: '📦', bg: 'linear-gradient(135deg, #F5EFEB, #E0CDBA)' };
@@ -59,4 +62,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   });
 
   return <ShopClient initialProducts={mappedProducts} initialCategory={category} initialTag={tag} />;
+}
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const { category, tag } = await searchParams;
+  
+  return (
+    <Suspense fallback={<ProductGridSkeleton />}>
+      <ShopProductsStream category={category} tag={tag} />
+    </Suspense>
+  );
 }

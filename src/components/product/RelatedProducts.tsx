@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import prisma from '@/lib/prisma';
 
 type RelatedProductsProps = {
@@ -41,7 +42,7 @@ export default async function RelatedProducts({ category, currentProductId }: Re
                 style={{ background: 'linear-gradient(135deg, #F7F3ED 0%, #EEE7DB 100%)' }}
               >
                 {product.images?.[0] ? (
-                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                  <Image src={product.images[0]} alt={product.name} fill className="w-full h-full object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 ) : null}
                 {/* Quick View Overlay */}
                 <div className="absolute inset-0 bg-[rgba(247,243,237,0.7)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import prisma from "@/lib/prisma";
 import ProductCard, { ProductType } from "@/components/ui/ProductCard";
 import HorizontalScroller from "@/components/storefront/HorizontalScroller";
 import Hero from "@/components/sections/Hero";
 import Marquee from "@/components/sections/Marquee";
 import Footer from "@/components/sections/Footer";
+import { ProductRailSkeleton } from "@/components/ui/LoadingSkeleton";
 
 const categoryPresets: Record<string, { icon: string; bg: string }> = {
   "Skin Care": { icon: "🌿", bg: "linear-gradient(135deg, #E8F5E0, #C8E6B8)" },
@@ -53,23 +55,8 @@ function getProductTag(product: { createdAt: Date; stock: number }) {
   return "Featured";
 }
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-export default async function Home() {
-  const dbProducts = await prisma.product.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-
-  const bestSellerRows = await (prisma as any).orderItem.groupBy({
-    by: ["productId"],
-    _sum: { quantity: true },
-    orderBy: { _sum: { quantity: "desc" } },
-    take: 8,
-  }).catch(() => []);
-  const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
-
-  const mappedProducts: ProductType[] = dbProducts.map((p: any) => {
+async function mapProductsWithTags(dbProducts: any[], bestSellerIds: Set<string>): Promise<ProductType[]> {
+  return dbProducts.map((p: any) => {
     const preset = categoryPresets[p.category] || { icon: "📦", bg: "linear-gradient(135deg, #F5EFEB, #E0CDBA)" };
     const tag = getProductTag({ createdAt: p.createdAt, stock: p.stock });
     return {
@@ -86,12 +73,28 @@ export default async function Home() {
       imageUrl: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
     };
   });
+}
 
-  const productById = new Map(mappedProducts.map((product) => [product.id, product]));
+async function ProductsStream() {
+  // Fetch products and best sellers in parallel
+  const [dbProducts, bestSellerRows] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+    }),
+    (prisma as any).orderItem.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 8,
+    }).catch(() => []),
+  ]);
+
+  const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
+  const mappedProducts = await mapProductsWithTags(dbProducts, bestSellerIds);
+  
+  // Filter products without creating unnecessary intermediate objects
   const newArrivals = mappedProducts.slice(0, 10);
-  const bestSellers = bestSellerRows
-    .map((row: any) => productById.get(row.productId))
-    .filter(Boolean) as ProductType[];
+  const bestSellers = mappedProducts.filter((p) => bestSellerIds.has(p.id!)).slice(0, 8);
   const featuredProducts = mappedProducts
     .filter((p) => p.badge === "Featured" || p.category === "Skin Care")
     .slice(0, 8);
@@ -103,9 +106,7 @@ export default async function Home() {
   ];
 
   return (
-    <main>
-      <Hero />
-      <Marquee />
+    <>
       <section className="bg-[var(--color-cream)] px-6 md:px-16 py-6">
         <div className="mx-auto container max-w-[1400px]">
           <section className="py-10 md:py-14">
@@ -176,6 +177,21 @@ export default async function Home() {
           </section>
         </div>
       </section>
+    </>
+  );
+}
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default function Home() {
+  return (
+    <main>
+      <Hero />
+      <Marquee />
+      <Suspense fallback={<ProductRailSkeleton />}>
+        <ProductsStream />
+      </Suspense>
       <Footer />
     </main>
   );
