@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Toaster, toast } from "sonner";
 import { getShortOrderId } from "@/lib/orderId";
