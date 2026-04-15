@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 
 type ProductGalleryProps = {
