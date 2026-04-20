@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import ProductCard, { ProductType } from '@/components/ui/ProductCard';
 import Footer from '@/components/sections/Footer';
 
-const categories = ["All", "Skin Care", "Hair Care", "Body Care"];
+const categories = ["All", "Skin Care", "Hair Care", "Face Care" , "Body Care"];
 
 interface ShopClientProps {
   initialProducts: ProductType[];

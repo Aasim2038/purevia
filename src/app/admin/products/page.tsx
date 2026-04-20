@@ -32,7 +32,9 @@ export default function AdminProductsPage() {
     stock: '',
     description: '',
     ingredients: '',
-    howToUse: ''
+    howToUse: '',
+    isFeatured: false,
+    showInGrid: false,
   });
 
   const categoryPresets: Record<string, { icon: string, bg: string }> = {
@@ -91,7 +93,7 @@ export default function AdminProductsPage() {
 
 
   const clearForm = () => {
-    setFormData({ name: '', price: '', category: 'Skin Care', stock: '', description: '', ingredients: '', howToUse: '' });
+    setFormData({ name: '', price: '', category: 'Skin Care', stock: '', description: '', ingredients: '', howToUse: '', isFeatured: false, showInGrid: false });
     setImageFiles([null, null]);
     setImagePreviews([null, null]);
     setVideoFile(null);
@@ -108,7 +110,9 @@ export default function AdminProductsPage() {
       stock: product.stock !== undefined && product.stock !== null ? String(product.stock) : '0',
       description: product.description || '',
       ingredients: product.ingredients || '',
-      howToUse: product.howToUse || ''
+      howToUse: product.howToUse || '',
+      isFeatured: product.isFeatured || false,
+      showInGrid: product.showInGrid || false
     });
     setEditProductId(product.id);
     const existingImages = Array.isArray(product.images) ? product.images : [];
@@ -262,16 +266,17 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)] overflow-hidden">
-            <div className="overflow-x-auto min-h-[300px]">
-              <table className="w-full text-left border-collapse">
+            {/* Table view for larger screens */}
+            <div className="hidden md:block overflow-x-auto min-h-[300px]">
+              <table className="w-full text-left border-collapse table-fixed">
                 <thead>
                   <tr className="bg-[#FCFAf8] text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium border-b border-[#EAE6DF]">
-                    <th className="px-8 py-5 w-[100px]">Image</th>
-                    <th className="px-8 py-5 min-w-[200px]">Product Name</th>
-                    <th className="px-8 py-5">Category</th>
-                    <th className="px-8 py-5">Price</th>
-                    <th className="px-8 py-5 text-center">Stock</th>
-                    <th className="px-8 py-5 text-right w-[120px]">Actions</th>
+                    <th className="px-4 py-5 w-[10%]">Image</th>
+                    <th className="px-4 py-5 w-[25%]">Product Name</th>
+                    <th className="px-4 py-5 w-[18%]">Category</th>
+                    <th className="px-4 py-5 w-[12%]">Price</th>
+                    <th className="px-4 py-5 w-[12%] text-center">Stock</th>
+                    <th className="px-4 py-5 w-[23%] text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-[0.9rem] text-[var(--color-text)]">
@@ -288,7 +293,7 @@ export default function AdminProductsPage() {
                       const theme = categoryPresets[product.category] || { icon: '📦', bg: '#F5E8F0' };
                       return (
                         <tr key={product.id} className="border-b border-[#F5F3ED] hover:bg-[#FAF9F7] transition-colors last:border-0 relative group">
-                          <td className="px-8 py-4">
+                          <td className="px-4 py-4 overflow-hidden">
                             <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-2xl shadow-sm border border-[#EAE6DF] overflow-hidden relative" style={{ background: theme.bg }}>
                               {product.images && product.images.length > 0 ? (
                                 <Image src={product.images[0]} alt={product.name} fill className="w-full h-full object-cover" />
@@ -297,23 +302,23 @@ export default function AdminProductsPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-8 py-4 font-serif font-medium text-[1.1rem]">{product.name}</td>
-                          <td className="px-8 py-4 text-[0.85rem] text-[var(--color-text-muted)]">{product.category}</td>
-                          <td className="px-8 py-4 font-serif text-[1rem]">₹{product.price}</td>
-                          <td className="px-8 py-4 text-center">
-                            <span className={`inline-flex items-center justify-center font-medium w-12 py-1 rounded-full text-[0.8rem] ${
+                          <td className="px-4 py-4 font-serif font-medium text-[0.95rem] truncate">{product.name}</td>
+                          <td className="px-4 py-4 text-[0.8rem] text-[var(--color-text-muted)] truncate">{product.category}</td>
+                          <td className="px-4 py-4 font-serif text-[0.95rem]">₹{product.price}</td>
+                          <td className="px-4 py-4 text-center">
+                            <span className={`inline-flex items-center justify-center font-medium px-2 py-1 rounded-full text-[0.7rem] whitespace-nowrap ${
                               product.stock > 20 ? 'bg-[#E8F5E0] text-[var(--color-sage-dark)]' : 
                               product.stock > 0 ? 'bg-[#FFF4E5] text-[#D48806]' : 'bg-[#FCF3F3] text-red-600'
                             }`}>
                               {product.stock}
                             </span>
                           </td>
-                          <td className="px-8 py-4 text-right">
-                            <div className="flex items-center justify-end gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => handleEditClick(product)} className="p-1.5 text-[var(--color-text-muted)] hover:text-[#0958D9] transition-colors focus:outline-none" aria-label="Edit">
+                          <td className="px-4 py-4 text-center">
+                            <div className="flex items-center justify-center gap-4 opacity-70 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => handleEditClick(product)} className="p-2.5 text-[var(--color-text-muted)] hover:text-[#0958D9] hover:bg-[#F0F4FF] rounded-lg transition-colors focus:outline-none flex-shrink-0" title="Edit" aria-label="Edit">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                               </button>
-                              <button onClick={() => handleDeleteClick(product)} className="p-1.5 text-[var(--color-text-muted)] hover:text-red-600 transition-colors focus:outline-none" aria-label="Delete">
+                              <button onClick={() => handleDeleteClick(product)} className="p-2.5 text-[var(--color-text-muted)] hover:text-red-600 hover:bg-[#FEF2F2] rounded-lg transition-colors focus:outline-none flex-shrink-0" title="Delete" aria-label="Delete">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                               </button>
                             </div>
@@ -325,28 +330,78 @@ export default function AdminProductsPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Card view for mobile screens */}
+            <div className="md:hidden min-h-[300px]">
+              {loading ? (
+                <div className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">Loading products...</div>
+              ) : products.length === 0 ? (
+                <div className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">No products fully synced yet. Click "New Product" to begin building your inventory!</div>
+              ) : (
+                <div className="space-y-4 p-4">
+                  {products.map((product) => {
+                    const theme = categoryPresets[product.category] || { icon: '📦', bg: '#F5E8F0' };
+                    return (
+                      <div key={product.id} className="border border-[#EAE6DF] rounded-lg p-4 bg-[#FAF9F7] hover:bg-[#F5F3ED] transition-colors">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-16 h-16 rounded-[10px] flex items-center justify-center text-3xl shadow-sm border border-[#EAE6DF] overflow-hidden relative flex-shrink-0" style={{ background: theme.bg }}>
+                            {product.images && product.images.length > 0 ? (
+                              <Image src={product.images[0]} alt={product.name} fill className="w-full h-full object-cover" />
+                            ) : (
+                              theme.icon
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-serif font-medium text-[1rem] text-[var(--color-text)] truncate mb-1">{product.name}</h3>
+                            <p className="text-[0.8rem] text-[var(--color-text-muted)] mb-2">{product.category}</p>
+                            <div className="flex gap-3 items-center">
+                              <span className="font-serif text-[0.95rem] text-[var(--color-text)]">₹{product.price}</span>
+                              <span className={`inline-flex items-center justify-center font-medium px-2 py-1 rounded-full text-[0.7rem] ${
+                                product.stock > 20 ? 'bg-[#E8F5E0] text-[var(--color-sage-dark)]' : 
+                                product.stock > 0 ? 'bg-[#FFF4E5] text-[#D48806]' : 'bg-[#FCF3F3] text-red-600'
+                              }`}>
+                                Stock: {product.stock}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 justify-end pt-3 border-t border-[#EAE6DF]">
+                          <button onClick={() => handleEditClick(product)} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-[#EAE6DF] rounded-lg text-[var(--color-text-muted)] hover:text-[#0958D9] hover:border-[#0958D9] transition-colors text-[0.75rem] font-medium" aria-label="Edit">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Edit
+                          </button>
+                          <button onClick={() => handleDeleteClick(product)} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-[#EAE6DF] rounded-lg text-[var(--color-text-muted)] hover:text-red-600 hover:border-red-300 transition-colors text-[0.75rem] font-medium" aria-label="Delete">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
 
       {/* Add Product Modal */}
       {isModalOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center pb-20">
-          <div className="absolute inset-0 bg-[var(--color-text)]/40 backdrop-blur-sm transition-opacity" onClick={() => setIsModalOpen(false)}></div>
-          
-          <div className="relative bg-[#FDFDFD] w-full max-w-lg rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.15)] border border-[#EAE6DF] overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-300">
-            <div className="flex justify-between items-center p-6 border-b border-[#EAE6DF] bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="relative bg-[#FDFDFD] w-full max-w-lg max-h-[90vh] rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.15)] border border-[#EAE6DF] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-center p-6 border-b border-[#EAE6DF] bg-white shrink-0">
               <h3 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">{editProductId ? 'Edit Product' : 'Add New Product'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors focus:outline-none">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
             
-            <div className="p-8 space-y-5">
-              <div className="space-y-3">
-                <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)]">
-                  Media Uploads (2 Images + 1 Video)
-                </label>
+            <div className="overflow-y-auto flex-1">
+              <div className="p-8 pt-10 pb-10 space-y-5">
+                <div className="space-y-3">
+                  <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)]">
+                    Media Uploads (2 Images + 1 Video)
+                  </label>
                 <div className="flex flex-wrap gap-3">
                   {[0, 1].map((slotIndex) => (
                     <button
@@ -417,12 +472,25 @@ export default function AdminProductsPage() {
                     <option value="Skin Care">Skin Care</option>
                     <option value="Hair Care">Hair Care</option>
                     <option value="Body Care">Body Care</option>
+                    <option value="Face Care">Face Care</option>
+                    <option value="Oral Care">Oral Care</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">Stock Amount</label>
                   <input type="number" name="stock" value={formData.stock} onChange={handleChange} placeholder="0" className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors" />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))} className="w-5 h-5 accent-[var(--color-sage-dark)] cursor-pointer" />
+                  <span className="text-[0.75rem] font-medium text-[var(--color-text)] uppercase tracking-widest">Featured Product</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" name="showInGrid" checked={formData.showInGrid} onChange={(e) => setFormData(prev => ({ ...prev, showInGrid: e.target.checked }))} className="w-5 h-5 accent-[var(--color-sage-dark)] cursor-pointer" />
+                  <span className="text-[0.75rem] font-medium text-[var(--color-text)] uppercase tracking-widest">Show in Grid</span>
+                </label>
               </div>
 
               <div>
@@ -439,9 +507,10 @@ export default function AdminProductsPage() {
                 <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">How to Use</label>
                 <textarea name="howToUse" value={formData.howToUse} onChange={handleChange} rows={3} placeholder="Usage instructions..." className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors resize-none"></textarea>
               </div>
+              </div>
             </div>
 
-            <div className="p-6 bg-[#FAF9F7] border-t border-[#EAE6DF] flex justify-end gap-3">
+            <div className="p-6 bg-[#FAF9F7] border-t border-[#EAE6DF] flex justify-end gap-3 shrink-0">
               <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 text-[0.75rem] tracking-[0.1em] uppercase font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">Cancel</button>
               <button 
                 onClick={handleSaveProduct}
@@ -454,12 +523,8 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center pb-20">
-          <div className="absolute inset-0 bg-[#000000]/20 backdrop-blur-sm transition-opacity" onClick={() => setIsDeleteModalOpen(false)}></div>
-          
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="relative bg-white w-full max-w-sm rounded-[24px] shadow-[0_24px_60px_rgba(0,0,0,0.15)] border border-[#EAE6DF] overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
             <div className="p-8 text-center flex flex-col items-center">
               <div className="flex flex-col items-center justify-center mb-5">

@@ -128,7 +128,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Floating morph element & Badge */}
+      {/* Desktop: Clean Typography (no image box) */}
       <motion.div 
         className="absolute right-[8%] top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-6 max-md:hidden"
         initial={{ opacity: 0, scale: 0.95 }}
@@ -150,7 +150,7 @@ export default function Hero() {
           }}
           transition={{ repeat: Infinity, ease: "easeInOut", duration: 8 }}
         >
-          {/* Custom elegant SVG leaf instead of emoji */}
+          {/* SVG Leaf background */}
           <div className="absolute inset-0 flex items-center justify-center opacity-80" style={{ filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.1))' }}>
             <svg viewBox="0 0 200 200" width="160" height="160" fill="none" xmlns="http://www.w3.org/2000/svg">
                <path d="M100 180 C100 180 80 120 100 40" stroke="#5C7352" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -165,6 +165,24 @@ export default function Hero() {
           <strong className="block text-[1.3rem] text-[var(--color-sage-dark)] font-medium leading-tight">100%</strong>
           Chemical Free
         </div>
+      </motion.div>
+
+      {/* Mobile: Hero Video */}
+      <motion.div
+        className="absolute inset-0 md:hidden z-5 flex items-end justify-center pb-16"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3, duration: 0.8 }}
+      >
+        <video
+          src="/videos/hero-loop.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-[85%] h-auto max-h-[40vh] object-contain rounded-2xl"
+        />
       </motion.div>
 
       {/* Scroll indicator */}

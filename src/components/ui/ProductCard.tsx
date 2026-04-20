@@ -68,7 +68,7 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
     >
       <Link href={`/product/${product.id || '123'}`} className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>
       
-      <div className="h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
+      <div className="aspect-square sm:aspect-auto sm:h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
         <div className="absolute inset-0 z-0 opacity-80 mix-blend-multiply" style={{ background: product.bg }} />
         {thumbnail ? (
           <Image src={thumbnail} alt={product.name} fill className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
@@ -84,16 +84,16 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
         )}
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <div className="font-serif text-[1.4rem] font-normal mb-1 text-[var(--color-text)] leading-snug" style={{ fontFamily: 'var(--font-cormorant)' }}>
+      <div className="p-4 sm:p-6 flex flex-col flex-1">
+        <div className="font-serif text-[1.1rem] sm:text-[1.4rem] font-normal mb-1 text-[var(--color-text)] leading-snug line-clamp-1" style={{ fontFamily: 'var(--font-cormorant)' }}>
           {product.name}
         </div>
-        <div className="text-[0.82rem] text-[var(--color-text-muted)] mb-5 leading-[1.6] font-light flex-1">
+        <div className="text-[0.75rem] sm:text-[0.82rem] text-[var(--color-text-muted)] mb-4 sm:mb-5 leading-[1.6] font-light flex-1 line-clamp-2 min-h-[2.4rem] sm:min-h-[2.6rem]">
           {product.desc}
         </div>
         <div className="flex justify-between items-end mt-auto pt-4 border-t border-[rgba(196,168,130,0.1)] relative z-30">
-          <div className="text-[1.2rem] font-medium text-[var(--color-earth-dark)]">
-            ₹{numericPrice} <span className="text-[0.78rem] text-[var(--color-text-muted)] font-light ml-1">{product.size}</span>
+          <div className="text-[1rem] sm:text-[1.2rem] font-medium text-[var(--color-earth-dark)]">
+            ₹{numericPrice} <span className="text-[0.7rem] sm:text-[0.78rem] text-[var(--color-text-muted)] font-light ml-1">{product.size}</span>
           </div>
           <button 
             onClick={handleAdd}
