@@ -22,6 +22,11 @@ async function getProductById(id: string) {
     include: {
       reviews: {
         orderBy: { createdAt: "desc" },
+        include: {
+          user: {
+            select: { name: true }
+          }
+        }
       },
     },
   });
@@ -74,7 +79,7 @@ async function ProductContent({ id }: { id: string }) {
         </div>
 
         {/* Reviews */}
-        <ProductReviews reviews={product.reviews || []} />
+        <ProductReviews reviews={product.reviews || []} productId={product.id} />
       </section>
 
       {/* Related Products */}

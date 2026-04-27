@@ -66,7 +66,7 @@ export default function CartDrawer() {
                         <div className="text-[var(--color-earth)] italic font-light font-serif mb-3 text-[1.1rem]" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{item.price}</div>
                         
                         <div className="flex items-center bg-[var(--color-cream)] rounded-full border border-[rgba(138,158,126,0.2)] h-8 w-fit">
-                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-l-full focus:outline-none">-</button>
+                          <button disabled={item.name.includes("Pack of") ? item.quantity <= 3 : false} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-l-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">-</button>
                           <span className="text-[0.8rem] font-medium w-6 text-center text-[var(--color-text)]">{item.quantity}</span>
                           <button
                             disabled={typeof item.maxStock === "number" && item.quantity >= item.maxStock}
@@ -94,6 +94,15 @@ export default function CartDrawer() {
                   <span className="text-[0.85rem] uppercase tracking-[0.15em] text-[var(--color-text-muted)]">Subtotal</span>
                   <span className="font-serif text-[1.8rem] font-light italic text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{subtotal}</span>
                 </div>
+                {299 - subtotal > 0 ? (
+                  <div className="text-[0.75rem] text-[#D48806] text-center mb-4 font-medium uppercase tracking-wider">
+                    Add ₹{299 - subtotal} more for <strong className="font-bold">FREE Delivery!</strong>
+                  </div>
+                ) : (
+                  <div className="text-[0.75rem] text-[var(--color-sage-dark)] text-center mb-4 font-medium uppercase tracking-wider">
+                    You have unlocked FREE Delivery!
+                  </div>
+                )}
                 <Link 
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}

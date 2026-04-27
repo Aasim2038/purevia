@@ -33,7 +33,7 @@ export default function CheckoutPage() {
     city: '',
     pin: ''
   });
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("");
 
   useEffect(() => {
     if (!session?.user) return;
@@ -167,8 +167,11 @@ export default function CheckoutPage() {
   };
 
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 50 : 0;
-  const total = subtotal + shipping;
+  const isOnlinePayment = paymentMethod === 'card' || paymentMethod === 'upi';
+  const onlineDiscount = isOnlinePayment ? Math.floor(subtotal * 0.05) : 0;
+  const shipping = subtotal > 0 && subtotal < 299 ? 40 : 0;
+  const total = subtotal - onlineDiscount + shipping;
+  const remainingForFreeShipping = 299 - subtotal;
 
   const accordionVariants = {
     hidden: { height: 0, opacity: 0, overflow: 'hidden' },
@@ -203,14 +206,36 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-4 py-6 border-y border-[rgba(138,158,126,0.15)] mt-4">
-        <div className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[var(--color-text-muted)] uppercase tracking-wider">
+      <div className="flex flex-col gap-4 py-6 border-y border-[rgba(138,158,126,0.15)] mt-4 relative">
+        {remainingForFreeShipping > 0 ? (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[var(--color-cream)] px-4 py-1 text-[0.7rem] text-[#D48806] border border-[#D48806]/20 rounded-full font-medium uppercase tracking-wider whitespace-nowrap">
+            Add ₹{remainingForFreeShipping} more for FREE Delivery!
+          </div>
+        ) : subtotal > 0 && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[var(--color-sage)] px-4 py-1 text-[0.7rem] text-white rounded-full font-medium uppercase tracking-wider whitespace-nowrap shadow-sm">
+            You unlocked FREE Delivery!
+          </div>
+        )}
+        <div className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[var(--color-text-muted)] uppercase tracking-wider pt-2">
           <span>Subtotal</span>
           <span className="font-medium text-[var(--color-text)]">₹{subtotal}</span>
         </div>
+        <AnimatePresence>
+          {onlineDiscount > 0 && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[#D48806] uppercase tracking-wider overflow-hidden"
+            >
+              <span>Online Payment Discount (5%)</span>
+              <span className="font-medium">-₹{onlineDiscount}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[var(--color-text-muted)] uppercase tracking-wider">
           <span>Shipping</span>
-          <span className="font-medium text-[var(--color-text)]">{subtotal > 0 ? `₹${shipping}` : '—'}</span>
+          <span className="font-medium text-[var(--color-text)]">{subtotal > 0 ? (shipping > 0 ? `₹${shipping}` : 'FREE') : '—'}</span>
         </div>
       </div>
 
@@ -451,13 +476,17 @@ export default function CheckoutPage() {
               
               {renderSummaryDetails(false)}
 
-              <button 
-                onClick={handlePlaceOrder}
-                disabled={!isFormValid || hasStockViolation || isSubmitting}
-                className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
-              >
-                {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
-              </button>
+              {activeStep === 'payment' && paymentMethod !== '' && (
+                <motion.button 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  onClick={handlePlaceOrder}
+                  disabled={!isFormValid || hasStockViolation || isSubmitting}
+                  className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
+                >
+                  {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
+                </motion.button>
+              )}
             </div>
           </motion.div>
 
@@ -465,19 +494,26 @@ export default function CheckoutPage() {
       </div>
 
       {/* Mobile Sticky Bottom CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(138,158,126,0.15)] p-5 px-6 z-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(138,158,126,0.08)] pb-8">
-        <div className="flex flex-col">
-          <span className="text-[0.7rem] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Total Amount</span>
-          <span className="font-serif text-[1.6rem] text-[var(--color-earth)] font-medium leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
-        </div>
-        <button 
-          onClick={handlePlaceOrder} 
-          disabled={!isFormValid || hasStockViolation || isSubmitting} 
-          className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
-        >
-          {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
-        </button>
-      </div>
+      <AnimatePresence>
+        {activeStep === 'payment' && paymentMethod !== '' && (
+          <motion.div 
+            initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(138,158,126,0.15)] p-5 px-6 z-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(138,158,126,0.08)] pb-8"
+          >
+            <div className="flex flex-col">
+              <span className="text-[0.7rem] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Total Amount</span>
+              <span className="font-serif text-[1.6rem] text-[var(--color-earth)] font-medium leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
+            </div>
+            <button 
+              onClick={handlePlaceOrder} 
+              disabled={!isFormValid || hasStockViolation || isSubmitting} 
+              className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
+            >
+              {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -42,6 +42,7 @@ model User {
 
   orders    Order[]
   cart      CartItem[]
+  reviews   Review[]
 }
 
 model Product {
@@ -69,9 +70,11 @@ model Review {
   id        String   @id @default(uuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating    Int
   comment   String
+  isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

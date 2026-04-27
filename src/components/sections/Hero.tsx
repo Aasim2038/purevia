@@ -97,7 +97,7 @@ export default function Hero() {
           {/* Eyebrow */}
           <motion.div variants={fadeUp as any} className="text-[0.78rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-6 flex items-center gap-3">
             <span className="block w-8 h-[1px] bg-[var(--color-sage-dark)]" />
-            100% Chemical Free · Natural · Pure
+            Same Day Delivery in Nagpur · 100% Natural & Chemical Free
           </motion.div>
 
           {/* Title */}

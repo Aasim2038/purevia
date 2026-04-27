@@ -6,8 +6,10 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  price: number;
   imageUrl?: string | null;
   maxStock?: number;
+  minQty?: number;
   quantity: number;
 }
 
@@ -46,11 +48,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: Number(item.price ?? 0),
           quantity: Number(item.quantity ?? 0),
           imageUrl: item.imageUrl ? String(item.imageUrl) : null,
+          imageUrl: item.imageUrl ? String(item.imageUrl) : null,
           maxStock: Number(item.maxStock) > 0 ? Number(item.maxStock) : undefined,
+          minQty: Number(item.minQty) > 0 ? Number(item.minQty) : undefined,
         }))
         .map((item) => ({
           ...item,
-          quantity: item.maxStock ? Math.min(item.quantity, item.maxStock) : item.quantity,
+          quantity: Math.max(item.minQty || 1, item.maxStock ? Math.min(item.quantity, item.maxStock) : item.quantity),
         }))
         .filter((item) => item.id && item.name && item.price >= 0 && item.quantity > 0);
       setItems(normalized);
@@ -80,10 +84,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const nextQty = existing.quantity + safeRequestedQty;
         const clampedQty = mergedCap ? Math.min(nextQty, mergedCap) : nextQty;
         return prev.map((i) =>
-          i.id === item.id ? { ...i, maxStock: mergedCap, quantity: clampedQty } : i
+          i.id === item.id ? { ...i, maxStock: mergedCap, minQty: item.minQty, quantity: clampedQty } : i
         );
       }
-      return [...prev, { ...item, quantity: cap ? Math.min(safeRequestedQty, cap) : safeRequestedQty }];
+      return [...prev, { ...item, quantity: cap ? Math.min(safeRequestedQty, cap) : Math.max(item.minQty || 1, safeRequestedQty) }];
     });
     setIsCartOpen(true); // Open the drawer immediately when adding to cart
   };
@@ -100,8 +104,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
+        const minReq = item.name.includes("Pack of") ? 3 : 1;
+        const boundedQty = Math.max(quantity, minReq);
         const cap = item.maxStock && item.maxStock > 0 ? item.maxStock : undefined;
-        const safeQty = cap ? Math.min(quantity, cap) : quantity;
+        const safeQty = cap ? Math.min(boundedQty, cap) : boundedQty;
         return { ...item, quantity: safeQty };
       })
     );

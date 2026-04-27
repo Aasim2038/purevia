@@ -9,7 +9,7 @@ const categories = [
   { title: "Hair Care", icon: "🥥", href: "/shop?category=Hair%20Care", color: "from-[#E8EFF8] to-[#C8D8F0]" },
   { title: "Body Care", icon: "🪵", href: "/shop?category=Body%20Care", color: "from-[#F5EFEB] to-[#E0CDBA]" },
   { title: "Face Masks", icon: "💎", href: "/shop?category=Face%20Masks", color: "from-[#FEF3E0] to-[#F0DCC8]" },
-  { title: "Serums", icon: "✨", href: "/shop?category=Serums", color: "from-[#F0F8FF] to-[#E0EFFF]" },
+  { title: "Curated Kits", icon: "🎁", href: "/shop?category=Curated%20Kits", color: "from-[#F0F8FF] to-[#E0EFFF]" },
 ];
 
 const fadeUp = {

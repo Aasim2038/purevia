@@ -112,6 +112,13 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
           </button>
         )}
       </div>
+
+      {/* Trust Badges */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2 items-center justify-center pt-2 opacity-80">
+        <span className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.1em] text-[var(--color-sage-dark)] font-medium bg-[rgba(138,158,126,0.1)] px-3 py-1.5 rounded-full whitespace-nowrap">100% Organic</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-sage)]"></span>
+        <span className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.1em] text-[var(--color-sage-dark)] font-medium bg-[rgba(138,158,126,0.1)] px-3 py-1.5 rounded-full whitespace-nowrap">Chemical Free</span>
+      </div>
     </div>
   );
 }
