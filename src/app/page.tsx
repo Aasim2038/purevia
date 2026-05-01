@@ -81,22 +81,16 @@ async function mapProductsWithTags(dbProducts: any[], bestSellerIds: Set<string>
 async function ProductsStream() {
   // Fetch products and best sellers in parallel with caching
   const [dbProducts, bestSellerRows] = await Promise.all([
-    prisma.product.findMany(
-      {
-        orderBy: { createdAt: "desc" },
-        take: 50, // Fetch more products for both sliders and grid
-      },
-      { next: { revalidate: 3600 } } as any
-    ),
-    (prisma as any).orderItem.groupBy(
-      {
-        by: ["productId"],
-        _sum: { quantity: true },
-        orderBy: { _sum: { quantity: "desc" } },
-        take: 8,
-      },
-      { next: { revalidate: 1800 } } as any
-    ).catch(() => []),
+    prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50, // Fetch more products for both sliders and grid
+    }),
+    (prisma as any).orderItem.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 8,
+    }).catch(() => []),
   ]);
 
   const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
@@ -216,28 +210,21 @@ async function GridExploreSection({ products }: { products: ProductType[] }) {
   );
 }
 
-export const dynamic = "force-static";
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // Fetch products and best sellers in parallel
   const [dbProducts, bestSellerRows] = await Promise.all([
-    prisma.product.findMany(
-      {
-        orderBy: { createdAt: "desc" },
-        take: 50,
-      },
-      { next: { revalidate: 3600 } } as any
-    ),
-    (prisma as any).orderItem.groupBy(
-      {
-        by: ["productId"],
-        _sum: { quantity: true },
-        orderBy: { _sum: { quantity: "desc" } },
-        take: 8,
-      },
-      { next: { revalidate: 1800 } } as any
-    ).catch(() => []),
+    prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+    (prisma as any).orderItem.groupBy({
+      by: ["productId"],
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: "desc" } },
+      take: 8,
+    }).catch(() => []),
   ]);
 
   const bestSellerIds = new Set<string>(bestSellerRows.map((row: any) => row.productId));
