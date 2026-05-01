@@ -40,7 +40,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Settings are now hardcoded for maximum performance and to avoid redundant DB calls.
   const settings = {
     freeShippingThreshold: 299,
-    shippingCharge: 40,
+    shippingCharge: 0,
     onlineDiscount: 5,
   };
 
