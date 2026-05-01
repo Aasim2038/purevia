@@ -53,7 +53,7 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl md:text-4xl text-[var(--color-text)] mb-3">Create Account</h1>
-          <p className="text-[var(--color-text-muted)] text-[14px] font-light">Sign up to discover the Puroable experience</p>
+          <p className="text-[var(--color-text-muted)] text-[14px] font-light">Sign up to discover the Pureable experience</p>
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
@@ -63,7 +63,7 @@ export default function SignupPage() {
           </div>
           <div>
             <label className="block text-[11px] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-2 ml-1">Email Address</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@puroable.com" className="w-full bg-[rgba(247,243,237,0.7)] border border-[rgba(196,168,130,0.3)] rounded-xl px-4 py-3.5 text-[14px] outline-none focus:border-[var(--color-sage-dark)] focus:bg-white" />
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@pureable.com" className="w-full bg-[rgba(247,243,237,0.7)] border border-[rgba(196,168,130,0.3)] rounded-xl px-4 py-3.5 text-[14px] outline-none focus:border-[var(--color-sage-dark)] focus:bg-white" />
           </div>
           <div>
             <label className="block text-[11px] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-2 ml-1">Password</label>

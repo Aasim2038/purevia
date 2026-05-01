@@ -11,7 +11,7 @@ export default function TermsOfServicePage() {
         <h1 className="font-serif text-4xl md:text-5xl font-light text-[var(--color-text)] mb-6">Terms of Service</h1>
         <div className="space-y-5 text-[0.95rem] leading-[1.9] text-[var(--color-text-muted)]">
           <p>
-            This is a placeholder Terms of Service page for Puroable. By using this site, customers agree to comply
+            This is a placeholder Terms of Service page for Pureable. By using this site, customers agree to comply
             with applicable laws and the terms outlined in this agreement.
           </p>
           <p>

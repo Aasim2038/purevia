@@ -74,6 +74,8 @@ export async function POST(req: Request) {
       lng,
       shippingAmount,
       grandTotal,
+      razorpayOrderId,
+      razorpayPaymentId,
     } = body ?? {};
 
     const orderItems: IncomingOrderItem[] = Array.isArray(items) ? items : [];
@@ -158,6 +160,9 @@ export async function POST(req: Request) {
           totalAmount: safeGrandTotal,
           lat: typeof lat === "number" ? lat : null,
           lng: typeof lng === "number" ? lng : null,
+          razorpayOrderId: razorpayOrderId ? String(razorpayOrderId) : null,
+          razorpayPaymentId: razorpayPaymentId ? String(razorpayPaymentId) : null,
+          paymentStatus: razorpayPaymentId ? 'PAID' : 'PENDING',
           orderItems: {
             create: cleanItems,
           },

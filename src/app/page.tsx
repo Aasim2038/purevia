@@ -158,7 +158,7 @@ async function JoinFamilySection() {
             <div className="max-w-3xl">
               <div className="text-[0.72rem] tracking-[0.2em] uppercase mb-3 text-[rgba(255,255,255,0.8)]">Stay Connected</div>
               <h3 className="font-serif text-[clamp(2rem,3vw,2.8rem)] font-light leading-[1.1] mb-3" style={{ fontFamily: "var(--font-cormorant)" }}>
-                Join the Purevia Family
+                Join the Pureable Family
               </h3>
               <p className="text-[0.95rem] text-[rgba(255,255,255,0.85)] mb-6">
                 Get early access to new collections, ingredient stories, and premium offers.

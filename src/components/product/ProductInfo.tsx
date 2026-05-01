@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 
 type ProductInfoProps = {
@@ -13,24 +14,33 @@ type ProductInfoProps = {
     ingredients?: string;
     howToUse?: string;
     images?: string[];
+    minOrderQty?: number;
+    isKit?: boolean;
+    packs?: any;
+    kitItems?: any;
   };
 };
 
 export default function ProductInfo({ product }: ProductInfoProps) {
   const { addToCart } = useCart();
-  const [qty, setQty] = useState(1);
+  const minQty = product.minOrderQty && product.minOrderQty > 1 ? product.minOrderQty : 1;
+  const [qty, setQty] = useState(minQty);
   const [added, setAdded] = useState(false);
   const [openSection, setOpenSection] = useState<'ingredients' | 'howToUse' | 'shipping' | null>('ingredients');
-  const formattedPrice = Number(product.price || 0).toLocaleString('en-IN');
+  const packs = Array.isArray(product.packs) ? product.packs : [];
+  const kitItems = Array.isArray(product.kitItems) ? product.kitItems : [];
+  const hasPacks = packs.length > 0;
+  const [selectedPackIndex, setSelectedPackIndex] = useState(0);
+
+  const currentPrice = hasPacks ? packs[selectedPackIndex].price : product.price;
+  const formattedPrice = Number(currentPrice || 0).toLocaleString('en-IN');
   const descriptionText = product.description?.trim() || 'No description available for this product yet.';
   const ingredientsText = product.ingredients?.trim() || 'Ingredient details are currently unavailable.';
   const howToUseText = product.howToUse?.trim() || 'Usage instructions are currently unavailable.';
   const categoryText = product.category?.trim() || 'Uncategorized';
   const isOutOfStock = Number(product.stock) <= 0;
-  const isBundleRequired = Number(product.price) < 120;
-  const isLowStock = !isOutOfStock && Number(product.stock) <= (isBundleRequired ? 15 : 10);
+  const isLowStock = !isOutOfStock && Number(product.stock) <= 10;
   const maxAllowedQty = Math.max(1, Number(product.stock) || 1);
-  const [bundleSize, setBundleSize] = useState<3 | 5>(3);
 
   const accordionItems = [
     {
@@ -53,19 +63,36 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
   const handleAdd = () => {
     if (isOutOfStock) return;
-    const finalQty = isBundleRequired ? bundleSize : qty;
-    if (finalQty > maxAllowedQty) {
-      alert(`Only ${maxAllowedQty} available in stock.`);
-      return;
+    
+    let itemName = product.name;
+    let itemPrice = product.price;
+    let safeQty = Math.min(Math.max(1, qty), maxAllowedQty);
+
+    if (hasPacks) {
+      const pack = packs[selectedPackIndex];
+      itemName = `${product.name} - ${pack.label}`;
+      itemPrice = pack.price;
+      // When buying a pack, we treat it as 1 unit of that pack in the cart
+      safeQty = 1; 
+      if (maxAllowedQty < pack.quantity) {
+        alert(`Only ${maxAllowedQty} individual units available in stock. Cannot fulfill this pack size.`);
+        return;
+      }
+    } else {
+      if (safeQty > maxAllowedQty) {
+        alert(`Only ${maxAllowedQty} available in stock.`);
+        return;
+      }
     }
-    const safeQty = Math.min(Math.max(1, finalQty), maxAllowedQty);
+
     addToCart(
       {
-        id: product.id,
-        name: isBundleRequired ? `${product.name} - Pack of ${bundleSize}` : product.name,
-        price: product.price,
+        id: hasPacks ? `${product.id}-${selectedPackIndex}` : product.id,
+        name: itemName,
+        price: itemPrice,
         imageUrl: product.images?.[0] || null,
-        maxStock: maxAllowedQty,
+        maxStock: hasPacks ? Math.floor(maxAllowedQty / packs[selectedPackIndex].quantity) : maxAllowedQty,
+        minQty: hasPacks ? 1 : (product.minOrderQty && product.minOrderQty > 1 ? product.minOrderQty : undefined),
       },
       safeQty
     );
@@ -92,46 +119,44 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       <div className="text-[1.5rem] text-[var(--color-earth)] font-serif italic mb-8" style={{ fontFamily: 'var(--font-cormorant)' }}>
         ₹{formattedPrice}
       </div>
-      <p className="text-[0.95rem] text-[var(--color-text-muted)] leading-[1.8] font-light mb-10 max-w-[500px]">
+      <p className="text-[0.95rem] text-[var(--color-text-muted)] leading-[1.8] font-light mb-8 max-w-[500px]">
         {descriptionText}
       </p>
 
-      {/* Quantity */}
-      {isBundleRequired ? (
-        <div className="flex items-center gap-6 mb-10">
-          <span className="text-[0.8rem] uppercase tracking-[0.1em] text-[var(--color-text)] font-medium">Pack Size</span>
-          <div className="flex items-center gap-3">
-            <button 
-              disabled={isOutOfStock || maxAllowedQty < 3}
-              onClick={() => setBundleSize(3)}
-              className={`px-5 py-2.5 rounded-full text-[0.85rem] tracking-[0.05em] uppercase transition-all duration-300 border focus:outline-none ${bundleSize === 3 ? 'border-[var(--color-sage-dark)] bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-md' : 'border-[rgba(138,158,126,0.3)] bg-transparent text-[var(--color-text-muted)] hover:border-[var(--color-sage-dark)] hover:text-[var(--color-text)]'} disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              Pack of 3
-            </button>
-            <button 
-              disabled={isOutOfStock || maxAllowedQty < 5}
-              onClick={() => setBundleSize(5)}
-              className={`px-5 py-2.5 rounded-full text-[0.85rem] tracking-[0.05em] uppercase transition-all duration-300 border focus:outline-none ${bundleSize === 5 ? 'border-[var(--color-sage-dark)] bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-md' : 'border-[rgba(138,158,126,0.3)] bg-transparent text-[var(--color-text-muted)] hover:border-[var(--color-sage-dark)] hover:text-[var(--color-text)]'} disabled:opacity-40 disabled:cursor-not-allowed`}
-            >
-              Pack of 5
-            </button>
+
+      {/* Quantity / Packs */}
+      {hasPacks ? (
+        <div className="flex flex-col gap-3 mb-10">
+          <span className="text-[0.8rem] uppercase tracking-[0.1em] text-[var(--color-text)] font-medium">Select Bundle</span>
+          <div className="flex flex-wrap gap-3">
+            {packs.map((pack: any, idx: number) => (
+              <button 
+                key={idx}
+                disabled={isOutOfStock || maxAllowedQty < pack.quantity}
+                onClick={() => setSelectedPackIndex(idx)}
+                className={`px-5 py-3 rounded-xl text-[0.85rem] transition-all duration-300 border focus:outline-none flex flex-col items-start gap-1 ${selectedPackIndex === idx ? 'border-[var(--color-sage-dark)] bg-[rgba(138,158,126,0.05)] shadow-sm' : 'border-[#EAE6DF] bg-transparent text-[var(--color-text-muted)] hover:border-[var(--color-sage)]'} disabled:opacity-40 disabled:cursor-not-allowed`}
+              >
+                <span className={`font-medium tracking-wide ${selectedPackIndex === idx ? 'text-[var(--color-sage-dark)]' : 'text-[var(--color-text)]'}`}>{pack.label}</span>
+                <span className="text-[1.05rem] font-serif italic text-[var(--color-earth)]">₹{pack.price}</span>
+              </button>
+            ))}
           </div>
-          {isOutOfStock && <span className="text-[0.74rem] uppercase tracking-[0.08em] text-red-600">Out of Stock</span>}
+          {isOutOfStock && <span className="text-[0.74rem] uppercase tracking-[0.08em] text-red-600 mt-2">Out of Stock</span>}
         </div>
       ) : (
         <div className="flex items-center gap-6 mb-10">
           <span className="text-[0.8rem] uppercase tracking-[0.1em] text-[var(--color-text)] font-medium">Quantity</span>
           <div className="flex items-center bg-[var(--color-white)] rounded-full border border-[rgba(138,158,126,0.3)]">
-            <button disabled={isOutOfStock} onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 flex items-center justify-center text-[1.2rem] text-[var(--color-sage-dark)] transition-colors hover:bg-[var(--color-warm)] rounded-l-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">−</button>
+            <button disabled={isOutOfStock || qty <= minQty} onClick={() => setQty(Math.max(minQty, qty - 1))} className="w-10 h-10 flex items-center justify-center text-[1.2rem] text-[var(--color-sage-dark)] transition-colors hover:bg-[var(--color-warm)] rounded-l-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">−</button>
             <input
               type="number"
-              min={1}
+              min={minQty}
               max={maxAllowedQty}
               value={qty}
               disabled={isOutOfStock}
               onChange={(e) => {
-                const typedValue = Number(e.target.value) || 1;
-                setQty(Math.min(maxAllowedQty, Math.max(1, typedValue)));
+                const typedValue = Number(e.target.value) || minQty;
+                setQty(Math.min(maxAllowedQty, Math.max(minQty, typedValue)));
               }}
               className="w-12 text-center text-[0.9rem] font-medium bg-transparent outline-none disabled:opacity-40"
             />

@@ -64,6 +64,8 @@ async function ShopProductsStream({ category, tag }: { category?: string; tag?: 
       bg: preset.bg,
       images: Array.isArray(p.images) ? p.images : [],
       imageUrl: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+      minOrderQty: p.minOrderQty && p.minOrderQty > 1 ? p.minOrderQty : undefined,
+      isKit: p.isKit || false,
     };
   });
 

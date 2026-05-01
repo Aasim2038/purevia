@@ -18,6 +18,8 @@ export interface ProductType {
   stock?: number;
   images?: string[];
   imageUrl?: string | null;
+  minOrderQty?: number;
+  isKit?: boolean;
 }
 
 interface ProductCardProps {
@@ -42,13 +44,15 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
     e.preventDefault();
     e.stopPropagation();
     
+    const qty = product.minOrderQty && product.minOrderQty > 1 ? product.minOrderQty : 1;
     addToCart({
       id: product.id || `temp-${product.name}`,
       name: product.name,
       price: numericPrice || 0,
       imageUrl: thumbnail || null,
       maxStock: typeof product.stock === "number" && product.stock > 0 ? product.stock : undefined,
-    }, 1);
+      minQty: product.minOrderQty && product.minOrderQty > 1 ? product.minOrderQty : undefined,
+    }, qty);
     
     setIsAdded(true);
     setTimeout(() => {
@@ -77,7 +81,12 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
             {product.icon}
           </div>
         )}
-        {product.badge && (
+        {product.isKit && (
+          <span className="absolute top-4 left-4 bg-[#D48806]/90 text-white text-[0.68rem] tracking-[0.12em] uppercase py-1 px-3 rounded-full z-20 backdrop-blur-[8px]">
+            Combo/Kit
+          </span>
+        )}
+        {product.badge && !product.isKit && (
           <span className="absolute top-4 left-4 bg-[var(--color-sage-dark)]/90 text-white text-[0.68rem] tracking-[0.12em] uppercase py-1 px-3 rounded-full z-20 backdrop-blur-[8px]">
             {product.badge}
           </span>

@@ -55,7 +55,7 @@ export default function LoginPage() {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-[11px] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-2 ml-1">Email Address</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@puroable.com" className="w-full bg-[rgba(247,243,237,0.7)] border border-[rgba(196,168,130,0.3)] rounded-xl px-4 py-3.5 text-[14px] outline-none focus:border-[var(--color-sage-dark)] focus:bg-white" />
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hello@pureable.com" className="w-full bg-[rgba(247,243,237,0.7)] border border-[rgba(196,168,130,0.3)] rounded-xl px-4 py-3.5 text-[14px] outline-none focus:border-[var(--color-sage-dark)] focus:bg-white" />
           </div>
           <div>
             <label className="block text-[11px] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-2 ml-1">Password</label>

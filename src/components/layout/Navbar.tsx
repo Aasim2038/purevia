@@ -61,7 +61,7 @@ export default function Navbar() {
     return (
       <nav className={`fixed top-0 left-0 right-0 z-[100] flex justify-center items-center py-6 px-6 bg-[rgba(247,243,237,0.95)] backdrop-blur-[12px] border-b border-[rgba(196,168,130,0.2)]`}>
         <Link href="/" className="font-serif text-[2.2rem] font-light tracking-[0.1em] text-[var(--color-text)] no-underline">
-          Pur<span className="text-[var(--color-sage-dark)] italic">o</span>able
+          Pur<span className="text-[var(--color-sage-dark)] italic">e</span>able
         </Link>
       </nav>
     );
@@ -71,7 +71,7 @@ export default function Navbar() {
     <>
       <nav className={`fixed top-0 left-0 right-0 z-[100] flex justify-between items-center transition-all duration-400 ${scrolled ? 'bg-[rgba(247,243,237,0.95)] backdrop-blur-[12px] py-4 px-6 md:px-16 border-b border-[rgba(196,168,130,0.2)]' : 'py-6 px-6 md:px-16 bg-[rgba(247,243,237,0)]'}`}>
         <Link href="/" className="font-serif text-[1.8rem] font-light tracking-[0.1em] text-[var(--color-text)] no-underline relative z-[101]">
-          Pur<span className="text-[var(--color-sage-dark)] italic">o</span>able
+          Pur<span className="text-[var(--color-sage-dark)] italic">e</span>able
         </Link>
         <ul className="hidden md:flex gap-8 lg:gap-10 list-none m-0 p-0 items-center">
           <li><Link href="/shop" className="text-[0.82rem] font-medium tracking-[0.15em] uppercase text-[var(--color-sage-dark)] no-underline transition-colors duration-300 hover:text-[var(--color-earth-dark)]">Shop</Link></li>

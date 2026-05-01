@@ -60,7 +60,7 @@ export default function NatureSection() {
               "Nature has the best answers. We just listen."
             </p>
             <span className="text-[0.72rem] tracking-[0.15em] uppercase text-[rgba(247,243,237,0.5)] mt-3 block">
-              Puroable Promise
+              Pureable Promise
             </span>
           </motion.div>
         </motion.div>
@@ -87,7 +87,7 @@ export default function NatureSection() {
           </motion.h2>
 
           <motion.p variants={fadeUp as any} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
-            Puroable was born from a simple belief — that the best skincare and haircare doesn't need a chemistry lab. It needs the right plants, the right process, and the right intention.
+            Pureable was born from a simple belief — that the best skincare and haircare doesn't need a chemistry lab. It needs the right plants, the right process, and the right intention.
           </motion.p>
           <motion.p variants={fadeUp as any} className="text-[0.95rem] text-[var(--color-text-muted)] leading-[2] mb-[1.2rem] font-light">
             Every product we make is free from parabens, sulphates, artificial fragrances, and synthetic chemicals. Just pure, effective nature — the way it was meant to be.

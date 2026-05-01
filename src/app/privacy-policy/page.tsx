@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
         <h1 className="font-serif text-4xl md:text-5xl font-light text-[var(--color-text)] mb-6">Privacy Policy</h1>
         <div className="space-y-5 text-[0.95rem] leading-[1.9] text-[var(--color-text-muted)]">
           <p>
-            This is a placeholder privacy policy for Puroable. We respect your privacy and are committed to protecting
+            This is a placeholder privacy policy for Pureable. We respect your privacy and are committed to protecting
             your personal information through transparent data handling practices.
           </p>
           <p>
@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
             process purchases, provide support, and improve service quality.
           </p>
           <p>
-            Payment-related information is handled through secure payment channels. Puroable does not store complete
+            Payment-related information is handled through secure payment channels. Pureable does not store complete
             card credentials on its own systems.
           </p>
           <p>

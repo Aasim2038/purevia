@@ -41,7 +41,7 @@ function SuccessContent() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}>
         <div className="uppercase tracking-[0.2em] text-[0.75rem] text-[var(--color-text-muted)] mb-3">Order Confirmed</div>
         <h1 className="font-serif text-[clamp(2.2rem,4vw,3rem)] font-light leading-[1.1] mb-4 text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
-          Thank you for choosing <br/><em className="italic text-[var(--color-sage-dark)]">Purevia</em>
+          Thank you for choosing <br/><em className="italic text-[var(--color-sage-dark)]">Pureable</em>
         </h1>
         <p className="text-[1rem] text-[var(--color-text-muted)] font-light leading-[1.6] mb-8 max-w-[400px] mx-auto">
           Your order <strong className="font-medium text-[var(--color-text)]">#{orderId}</strong> has been placed successfully. We will contact you shortly for confirmation.

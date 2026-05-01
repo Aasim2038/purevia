@@ -23,15 +23,27 @@ interface CartContextType {
   cartCount: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  settings: {
+    freeShippingThreshold: number;
+    shippingCharge: number;
+    onlineDiscount: number;
+  };
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
-const CART_STORAGE_KEY = "purevia_cart_items";
+const CART_STORAGE_KEY = "pureable_cart_items";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCartHydrated, setIsCartHydrated] = useState(false);
+  // Settings are now hardcoded for maximum performance and to avoid redundant DB calls.
+  const settings = {
+    freeShippingThreshold: 299,
+    shippingCharge: 40,
+    onlineDiscount: 5,
+  };
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -104,7 +116,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
-        const minReq = item.name.includes("Pack of") ? 3 : 1;
+        // Use minQty from product data, default to 1
+        const minReq = item.minQty && item.minQty > 0 ? item.minQty : 1;
         const boundedQty = Math.max(quantity, minReq);
         const cap = item.maxStock && item.maxStock > 0 ? item.maxStock : undefined;
         const safeQty = cap ? Math.min(boundedQty, cap) : boundedQty;
@@ -120,7 +133,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, isCartHydrated, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, isCartOpen, setIsCartOpen }}>
+    <CartContext.Provider value={{ items, isCartHydrated, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, isCartOpen, setIsCartOpen, settings }}>
       {children}
     </CartContext.Provider>
   );

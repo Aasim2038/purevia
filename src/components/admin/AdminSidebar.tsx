@@ -17,7 +17,8 @@ export default function AdminSidebar() {
   return (
     <aside className="w-64 bg-white border-r border-[#EAE6DF] hidden md:flex flex-col h-screen sticky top-0 left-0 pt-8 pb-6 px-6">
       <Link href="/" className="font-serif text-[1.6rem] font-light tracking-[0.08em] text-[var(--color-text)] no-underline relative z-[101] mb-12 ml-2">
-        Pur<span className="text-[var(--color-sage-dark)] italic">o</span>able
+        Pur<span className="text-[var(--color-sage-dark)] italic">e</span>able
+
         <span className="block text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-text-muted)] mt-1 font-sans">Admin Portal</span>
       </Link>
       <nav className="flex-1 space-y-2">

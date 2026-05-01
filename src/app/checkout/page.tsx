@@ -10,15 +10,17 @@ import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+import Script from 'next/script';
+
 type CheckoutStep = 'shipping' | 'payment';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { items, clearCart, isCartHydrated } = useCart();
+  const { items, clearCart, isCartHydrated, settings } = useCart();
   const [activeStep, setActiveStep] = useState<CheckoutStep>('shipping');
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
-  
+
   const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,9 +107,9 @@ export default function CheckoutPage() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const isFormValid = items.length > 0 && 
-    formData.firstName.trim() !== '' && 
-    formData.phone.trim() !== '' && 
+  const isFormValid = items.length > 0 &&
+    formData.firstName.trim() !== '' &&
+    formData.phone.trim() !== '' &&
     formData.address.trim() !== '' &&
     formData.city.trim() !== '' &&
     formData.pin.trim() !== '';
@@ -122,7 +124,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async (razorpayPaymentId?: string, razorpayOrderId?: string) => {
     if (!isFormValid) {
       setActiveStep('shipping');
       return;
@@ -140,6 +142,8 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           ...formData,
           paymentMethod,
+          razorpayPaymentId, // Store the payment ID if available
+          razorpayOrderId,   // Store the order ID if available
           lat: coords?.lat,
           lng: coords?.lng,
           shippingAmount: shipping,
@@ -166,16 +170,73 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleRazorpayPayment = async () => {
+    try {
+      setIsSubmitting(true);
+      // 1. Create order on server
+      const orderRes = await fetch('/api/razorpay/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          receipt: `rcpt_${Date.now()}`,
+        }),
+      });
+      
+      if (!orderRes.ok) throw new Error('Failed to create Razorpay order');
+      
+      const orderData = await orderRes.json();
+
+      // 2. Open Razorpay modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'Pureable',
+        description: 'Order Payment',
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          // Payment success! Now place the order in our DB
+          await handlePlaceOrder(response.razorpay_payment_id, response.razorpay_order_id);
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: '#5C7352', // Sage dark
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Razorpay payment failed:', error);
+      setGeoError('Payment initialization failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCheckoutAction = () => {
+    if (isOnlinePayment) {
+      handleRazorpayPayment();
+    } else {
+      handlePlaceOrder();
+    }
+  };
+
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const isOnlinePayment = paymentMethod === 'card' || paymentMethod === 'upi';
-  const onlineDiscount = isOnlinePayment ? Math.floor(subtotal * 0.05) : 0;
-  const shipping = subtotal > 0 && subtotal < 299 ? 40 : 0;
+  const onlineDiscount = isOnlinePayment ? Math.floor(subtotal * (settings.onlineDiscount / 100)) : 0;
+  const shipping = subtotal > 0 && subtotal < settings.freeShippingThreshold ? settings.shippingCharge : 0;
   const total = subtotal - onlineDiscount + shipping;
-  const remainingForFreeShipping = 299 - subtotal;
+  const remainingForFreeShipping = settings.freeShippingThreshold - subtotal;
 
   const accordionVariants = {
     hidden: { height: 0, opacity: 0, overflow: 'hidden' },
-    visible: { height: 'auto', opacity: 1, overflow: 'hidden', transition: { duration: 0.4, ease: "easeInOut" as const} }
+    visible: { height: 'auto', opacity: 1, overflow: 'hidden', transition: { duration: 0.4, ease: "easeInOut" as const } }
   };
 
   // Shared generic summary details to avoid duplication
@@ -222,13 +283,13 @@ export default function CheckoutPage() {
         </div>
         <AnimatePresence>
           {onlineDiscount > 0 && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="flex justify-between items-center text-[0.8rem] md:text-[0.85rem] text-[#D48806] uppercase tracking-wider overflow-hidden"
             >
-              <span>Online Payment Discount (5%)</span>
+              <span>Online Payment Discount ({settings.onlineDiscount}%)</span>
               <span className="font-medium">-₹{onlineDiscount}</span>
             </motion.div>
           )}
@@ -251,14 +312,16 @@ export default function CheckoutPage() {
     </div>
   );
 
-  const BRAND_NAME = "{Puroable}";
+  const BRAND_NAME = "Pureable";
 
   return (
     <main className="bg-[var(--color-cream)] pt-[90px] pb-40 lg:pb-32 min-h-screen select-none relative">
-      
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
+
       {/* Mobile Sticky Order Peeker (Only visible on Mobile) */}
       <div className="lg:hidden sticky top-[80px] z-40 bg-white border-b border-[rgba(138,158,126,0.15)] shadow-[0_4px_15px_rgba(138,158,126,0.06)] px-6 py-5">
-        <button 
+        <button
           onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
           className="w-full flex justify-between items-center focus:outline-none"
         >
@@ -280,17 +343,28 @@ export default function CheckoutPage() {
         </AnimatePresence>
       </div>
 
+      {/* Online Payment Discount Banner */}
+      <div className="px-6 md:px-16 mx-auto container max-w-[1200px] mb-6">
+        <div className="bg-[linear-gradient(135deg,#FFF4E5_0%,#FDE6C8_100%)] border border-[#D48806]/20 rounded-2xl p-4 flex items-center justify-center gap-3 shadow-sm">
+          <span className="text-[1.2rem]">✨</span>
+          <p className="text-[0.85rem] md:text-[0.95rem] font-medium text-[#B37305] tracking-wide uppercase">
+            Save extra 5% with Online Payments!
+          </p>
+          <span className="text-[1.2rem]">✨</span>
+        </div>
+      </div>
+
       <div className="px-6 md:px-16 mx-auto container max-w-[1200px] mt-10 lg:mt-16">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="mb-8 lg:mb-12 text-center lg:text-left"
         >
           <div className="text-[0.75rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-4 flex justify-center lg:justify-start items-center gap-3">
-             <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
-             Final Step
-             <span className="hidden lg:block w-6 h-[1px] bg-[var(--color-sage)]" />
+            <span className="block w-6 h-[1px] bg-[var(--color-sage)]" />
+            Final Step
+            <span className="hidden lg:block w-6 h-[1px] bg-[var(--color-sage)]" />
           </div>
           <h1 className="font-serif text-[clamp(2.5rem,4vw,3.5rem)] font-light text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
             Secure <em className="italic text-[var(--color-sage-dark)]">Checkout</em> at {BRAND_NAME}
@@ -298,16 +372,16 @@ export default function CheckoutPage() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
-          
+
           {/* Left Column: Form Accordion */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             {/* STEP 1: SHIPPING */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}
               className={`bg-white rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border transition-all duration-300 overflow-hidden ${activeStep === 'shipping' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.2)]'}`}
             >
-              <button 
-                onClick={() => setActiveStep('shipping')} 
+              <button
+                onClick={() => setActiveStep('shipping')}
                 className="w-full flex justify-between items-center p-6 lg:p-8 focus:outline-none"
               >
                 <div className="flex items-center gap-5">
@@ -345,13 +419,13 @@ export default function CheckoutPage() {
                         <div className="flex flex-col gap-2 mt-2">
                           <div className="flex justify-between items-end mb-2">
                             <label className="text-[0.75rem] uppercase tracking-[0.1em] text-[var(--color-text-muted)] font-medium">Full Address</label>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={handleLocationClick}
                               disabled={geoLoading}
                               className="text-[0.75rem] bg-[rgba(138,158,126,0.1)] hover:bg-[rgba(138,158,126,0.2)] active:scale-95 text-[var(--color-sage-dark)] font-medium px-4 py-2 rounded-full transition-all flex items-center gap-1.5 focus:outline-none shadow-sm"
                             >
-                              <span className="text-[1rem]">📍</span> 
+                              <span className="text-[1rem]">📍</span>
                               {geoLoading ? "Locating..." : "Use My Location"}
                             </button>
                           </div>
@@ -387,12 +461,12 @@ export default function CheckoutPage() {
                           </div>
                         </div>
 
-                        <button 
-                           type="submit"
-                           disabled={!isFormValid}
-                           className={`mt-4 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${!isFormValid ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
+                        <button
+                          type="submit"
+                          disabled={!isFormValid}
+                          className={`mt-4 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${!isFormValid ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
                         >
-                           Continue to Payment
+                          Continue to Payment
                         </button>
                       </form>
                     </div>
@@ -402,12 +476,12 @@ export default function CheckoutPage() {
             </motion.div>
 
             {/* STEP 2: PAYMENT */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}
               className={`bg-white rounded-[24px] shadow-[0_10px_40px_rgba(138,158,126,0.03)] border transition-all duration-300 overflow-hidden ${activeStep === 'payment' ? 'border-[var(--color-sage-dark)]' : 'border-[rgba(138,158,126,0.2)]'}`}
             >
-              <button 
-                onClick={() => { if(isFormValid) setActiveStep('payment') }} 
+              <button
+                onClick={() => { if (isFormValid) setActiveStep('payment') }}
                 disabled={!isFormValid}
                 className={`w-full flex justify-between items-center p-6 lg:p-8 focus:outline-none ${!isFormValid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
@@ -430,6 +504,11 @@ export default function CheckoutPage() {
                         </div>
                         <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="hidden" />
                       </label>
+                      {paymentMethod === 'card' && (
+                        <div className="text-[0.8rem] text-[#D48806] font-medium -mt-3 ml-2 animate-in fade-in slide-in-from-top-1">
+                          Save {settings.onlineDiscount}% Instantly with Online Payment!
+                        </div>
+                      )}
 
                       <label className={`relative flex items-center justify-between p-5 rounded-xl border cursor-pointer transition-all duration-300 active:scale-[0.99] ${paymentMethod === 'upi' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-sm' : 'border-[rgba(138,158,126,0.2)] bg-[var(--color-cream)] hover:border-[var(--color-sage)]'}`}>
                         <div className="flex items-center gap-4">
@@ -440,6 +519,11 @@ export default function CheckoutPage() {
                         </div>
                         <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />
                       </label>
+                      {paymentMethod === 'upi' && (
+                        <div className="text-[0.8rem] text-[#D48806] font-medium -mt-3 ml-2 animate-in fade-in slide-in-from-top-1">
+                          Save {settings.onlineDiscount}% Instantly with Online Payment!
+                        </div>
+                      )}
 
                       <label className={`relative flex items-center justify-between p-5 rounded-xl border cursor-pointer transition-all duration-300 active:scale-[0.99] ${paymentMethod === 'cod' ? 'border-[var(--color-sage-dark)] bg-[rgba(247,243,237,0.3)] shadow-sm' : 'border-[rgba(138,158,126,0.2)] bg-[var(--color-cream)] hover:border-[var(--color-sage)]'}`}>
                         <div className="flex items-center gap-4">
@@ -450,7 +534,7 @@ export default function CheckoutPage() {
                         </div>
                         <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
                       </label>
-                      
+
                       {/* Place Order for Mobile embedded in payment step optionally, but we have sticky bottom bar. So just descriptive text here */}
                       <div className="lg:hidden text-[0.85rem] text-center text-[var(--color-text-muted)] mt-5 italic">
                         Use the sticky button below to complete your order securely.
@@ -463,7 +547,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Right Column: Order Summary (Desktop Sticky Sidebar) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
@@ -473,17 +557,18 @@ export default function CheckoutPage() {
               <h2 className="font-serif text-[1.6rem] font-light text-[var(--color-text)] mb-6 pb-4 border-b border-[rgba(138,158,126,0.15)]" style={{ fontFamily: 'var(--font-cormorant)' }}>
                 Order Summary
               </h2>
-              
+
               {renderSummaryDetails(false)}
 
               {activeStep === 'payment' && paymentMethod !== '' && (
-                <motion.button 
+                <motion.button
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  onClick={handlePlaceOrder}
+                  onClick={handleCheckoutAction}
                   disabled={!isFormValid || hasStockViolation || isSubmitting}
                   className={`mt-10 w-full py-[1.2rem] uppercase tracking-[0.15em] text-[0.85rem] rounded-full transition-all duration-300 active:scale-95 shadow-[0_4px_15px_rgba(138,158,126,0.15)] focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[var(--color-warm)] text-[var(--color-text-muted)] cursor-not-allowed shadow-none' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] hover:shadow-[0_8px_25px_rgba(138,158,126,0.3)] hover:-translate-y-1'}`}
                 >
+
                   {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
                 </motion.button>
               )}
@@ -496,19 +581,27 @@ export default function CheckoutPage() {
       {/* Mobile Sticky Bottom CTA */}
       <AnimatePresence>
         {activeStep === 'payment' && paymentMethod !== '' && (
-          <motion.div 
+          <motion.div
             initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(138,158,126,0.15)] p-5 px-6 z-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(138,158,126,0.08)] pb-8"
           >
             <div className="flex flex-col">
               <span className="text-[0.7rem] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Total Amount</span>
-              <span className="font-serif text-[1.6rem] text-[var(--color-earth)] font-medium leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{total}</span>
+              <span className="font-serif text-[1.6rem] text-[var(--color-earth)] font-medium leading-none" style={{ fontFamily: 'var(--font-cormorant)' }}>
+                ₹{total}
+              </span>
+              {isOnlinePayment && onlineDiscount > 0 && (
+                <span className="text-[0.7rem] text-[#D48806] font-medium mt-1">
+                  (Saved ₹{onlineDiscount})
+                </span>
+              )}
             </div>
-            <button 
-              onClick={handlePlaceOrder} 
-              disabled={!isFormValid || hasStockViolation || isSubmitting} 
+            <button
+              onClick={handleCheckoutAction}
+              disabled={!isFormValid || hasStockViolation || isSubmitting}
               className={`flex-1 ml-6 py-[1rem] uppercase tracking-[0.15em] text-[0.8rem] rounded-full transition-all duration-300 active:scale-95 focus:outline-none flex justify-center items-center ${(!isFormValid || hasStockViolation || isSubmitting) ? 'bg-[#F7F3ED] text-[var(--color-text-muted)] cursor-not-allowed border border-[rgba(138,158,126,0.2)]' : 'bg-[var(--color-sage-dark)] text-[#F7F3ED] shadow-[0_4px_15px_rgba(138,158,126,0.3)]'}`}
             >
+
               {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
             </button>
           </motion.div>

@@ -9,7 +9,7 @@ export default function Footer() {
         {/* Brand Info */}
         <div className="md:col-span-2 pr-0 md:pr-12">
           <div className="font-serif text-[2.5rem] font-light tracking-[0.1em] text-white mb-6" style={{ fontFamily: 'var(--font-cormorant)' }}>
-            Pur<span className="text-[var(--color-sage)] italic">o</span>able
+            Pur<span className="text-[var(--color-sage)] italic">e</span>able
           </div>
           <p className="text-[0.9rem] text-[rgba(247,243,237,0.6)] leading-[1.8] font-light mb-8 max-w-[320px]">
             Entirely True, Entirely You. Natural beauty products crafted with love and pure ingredients.
@@ -43,7 +43,7 @@ export default function Footer() {
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[0.75rem] text-[rgba(247,243,237,0.5)] tracking-[0.05em] font-light">
-        <span>© 2026 Puroable. All rights reserved.</span>
+        <span>© 2026 Pureable. All rights reserved.</span>
         <span>Nagpur, Maharashtra · India</span>
       </div>
     </footer>

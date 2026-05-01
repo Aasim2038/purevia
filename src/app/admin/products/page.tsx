@@ -9,7 +9,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { Toaster, toast } from 'sonner';
 
 export default function AdminProductsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'product' | 'kit' | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +35,10 @@ export default function AdminProductsPage() {
     howToUse: '',
     isFeatured: false,
     showInGrid: false,
+    isKit: false,
+    minOrderQty: '1',
+    packs: [] as any[],
+    kitItems: [] as any[],
   });
 
   const categoryPresets: Record<string, { icon: string, bg: string }> = {
@@ -92,14 +96,28 @@ export default function AdminProductsPage() {
 
 
 
-  const clearForm = () => {
-    setFormData({ name: '', price: '', category: 'Skin Care', stock: '', description: '', ingredients: '', howToUse: '', isFeatured: false, showInGrid: false });
+  const clearForm = (type: 'product' | 'kit' | null = null) => {
+    setFormData({ 
+      name: '', 
+      price: '', 
+      category: type === 'kit' ? 'Curated Kits' : 'Skin Care', 
+      stock: '', 
+      description: '', 
+      ingredients: '', 
+      howToUse: '', 
+      isFeatured: false, 
+      showInGrid: false, 
+      isKit: type === 'kit', 
+      minOrderQty: '1', 
+      packs: [], 
+      kitItems: [] 
+    });
     setImageFiles([null, null]);
     setImagePreviews([null, null]);
     setVideoFile(null);
     setVideoPreview(null);
     setEditProductId(null);
-    setIsModalOpen(false);
+    setModalType(type);
   };
 
   const handleEditClick = (product: any) => {
@@ -112,7 +130,11 @@ export default function AdminProductsPage() {
       ingredients: product.ingredients || '',
       howToUse: product.howToUse || '',
       isFeatured: product.isFeatured || false,
-      showInGrid: product.showInGrid || false
+      showInGrid: product.showInGrid || false,
+      isKit: product.isKit || false,
+      minOrderQty: product.minOrderQty ? String(product.minOrderQty) : '1',
+      packs: Array.isArray(product.packs) ? product.packs : [],
+      kitItems: Array.isArray(product.kitItems) ? product.kitItems : [],
     });
     setEditProductId(product.id);
     const existingImages = Array.isArray(product.images) ? product.images : [];
@@ -120,7 +142,8 @@ export default function AdminProductsPage() {
     setVideoPreview(product.videoUrl || null);
     setImageFiles([null, null]);
     setVideoFile(null);
-    setIsModalOpen(true);
+    setModalType('product');
+
   };
 
   const handleDeleteClick = (product: any) => {
@@ -221,7 +244,7 @@ export default function AdminProductsPage() {
       });
       
       if (res.ok) {
-        clearForm();
+        clearForm(null);
         toast.success(editProductId ? 'Product updated successfully!' : 'Product added successfully!');
         fetchProducts(); // Auto-refresh table!
       } else {
@@ -256,13 +279,15 @@ export default function AdminProductsPage() {
         <div className="p-8 md:p-12 pl-8 md:pl-12 pt-8 w-full max-w-6xl mx-auto flex-1">
           <div className="flex justify-between items-center mb-8">
             <h2 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">Inventory Management</h2>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-sage-dark)] text-white text-[0.8rem] tracking-[0.1em] uppercase rounded-full hover:bg-[var(--color-earth-dark)] transition-all shadow-sm hover:-translate-y-0.5 focus:outline-none"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              New Product
-            </button>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => clearForm('product')}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-sage-dark)] text-white text-[0.8rem] tracking-[0.1em] uppercase rounded-full hover:bg-[var(--color-earth-dark)] transition-all shadow-sm hover:-translate-y-0.5 focus:outline-none"
+              >
+                <svg width="16" height="16" viewBox="0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                New Product
+              </button>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)] overflow-hidden">
@@ -385,13 +410,15 @@ export default function AdminProductsPage() {
         </div>
       </main>
 
-      {/* Add Product Modal */}
-      {isModalOpen && (
+      {/* Add Product / Kit Modal */}
+      {modalType && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="relative bg-[#FDFDFD] w-full max-w-lg max-h-[90vh] rounded-3xl shadow-[0_24px_60px_rgba(0,0,0,0.15)] border border-[#EAE6DF] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
             <div className="flex justify-between items-center p-6 border-b border-[#EAE6DF] bg-white shrink-0">
-              <h3 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">{editProductId ? 'Edit Product' : 'Add New Product'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors focus:outline-none">
+              <h3 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">
+                {editProductId ? 'Edit Product' : 'Add New Product'}
+              </h3>
+              <button onClick={() => setModalType(null)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors focus:outline-none">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -493,6 +520,29 @@ export default function AdminProductsPage() {
                 </label>
               </div>
 
+              {modalType === 'product' && (
+                <div className="mt-6 border-t border-[#EAE6DF] pt-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)]">Pack Manager (Price Bundles)</label>
+                  </div>
+                  <div className="space-y-3">
+                    {formData.packs.map((pack, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <input type="text" placeholder="Label (e.g., Pack of 3)" value={pack.label} onChange={(e) => { const newPacks = [...formData.packs]; newPacks[i].label = e.target.value; setFormData(prev => ({ ...prev, packs: newPacks })); }} className="flex-1 bg-white border border-[#EAE6DF] rounded-xl px-3 py-2 text-[0.85rem] outline-none focus:border-[var(--color-sage-dark)]" />
+                        <input type="number" placeholder="Qty" value={pack.quantity || 1} onChange={(e) => { const newPacks = [...formData.packs]; newPacks[i].quantity = Number(e.target.value); setFormData(prev => ({ ...prev, packs: newPacks })); }} className="w-20 bg-white border border-[#EAE6DF] rounded-xl px-3 py-2 text-[0.85rem] outline-none focus:border-[var(--color-sage-dark)]" title="Quantity per pack" />
+                        <input type="number" placeholder="Pack Price ₹" value={pack.price} onChange={(e) => { const newPacks = [...formData.packs]; newPacks[i].price = Number(e.target.value); setFormData(prev => ({ ...prev, packs: newPacks })); }} className="w-32 bg-white border border-[#EAE6DF] rounded-xl px-3 py-2 text-[0.85rem] outline-none focus:border-[var(--color-sage-dark)]" />
+                        <button type="button" onClick={() => { const newPacks = formData.packs.filter((_, idx) => idx !== i); setFormData(prev => ({ ...prev, packs: newPacks })); }} className="text-red-500 hover:text-red-700">✕</button>
+                      </div>
+                    ))}
+                    {formData.packs.length < 3 && (
+                      <button type="button" onClick={() => setFormData(prev => ({ ...prev, packs: [...prev.packs, { label: '', price: '', quantity: 1 }] }))} className="text-[0.7rem] bg-[var(--color-sage-dark)] text-white px-3 py-1.5 rounded-full uppercase tracking-wider font-medium hover:bg-[var(--color-earth-dark)] transition-colors inline-block">+ Add Pack</button>
+                    )}
+                    {formData.packs.length === 0 && <p className="text-[0.75rem] text-[var(--color-text-muted)] italic">No packs added. Single unit only.</p>}
+                  </div>
+                </div>
+              )}
+
+
               <div>
                 <label className="block text-[0.65rem] tracking-[0.15em] uppercase font-medium text-[var(--color-text-muted)] mb-1">Description</label>
                 <textarea name="description" value={formData.description} onChange={handleChange} rows={3} placeholder="Brief product description..." className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.9rem] outline-none focus:border-[var(--color-sage-dark)] transition-colors resize-none"></textarea>
@@ -511,7 +561,7 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="p-6 bg-[#FAF9F7] border-t border-[#EAE6DF] flex justify-end gap-3 shrink-0">
-              <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 text-[0.75rem] tracking-[0.1em] uppercase font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">Cancel</button>
+              <button onClick={() => setModalType(null)} className="px-6 py-2.5 text-[0.75rem] tracking-[0.1em] uppercase font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">Cancel</button>
               <button 
                 onClick={handleSaveProduct}
                 disabled={isSubmitting}

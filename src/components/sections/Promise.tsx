@@ -36,7 +36,7 @@ export default function PromiseSection() {
           className="font-serif text-[clamp(3rem,5vw,4.5rem)] font-light leading-[1.1] mb-8"
           style={{ fontFamily: 'var(--font-cormorant)' }}
         >
-          The Puroable<br/><em className="italic text-[var(--color-sage)]">Promise</em>
+          The Pureable<br/><em className="italic text-[var(--color-sage)]">Promise</em>
         </motion.h2>
 
         <motion.p variants={fadeUp as any} className="text-[1rem] text-[rgba(247,243,237,0.7)] leading-[1.8] font-light mb-12 max-w-[550px] mx-auto">

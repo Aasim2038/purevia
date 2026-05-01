@@ -42,6 +42,7 @@ async function getRelatedProducts(category: string, currentProductId: string) {
   });
 }
 
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
   const product = await getProductById(id);

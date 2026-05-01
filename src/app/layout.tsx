@@ -25,13 +25,13 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "Puroable | Premium Chemical-Free Beauty",
-    template: "%s | Puroable",
+    default: "Pureable | Premium Chemical-Free Beauty",
+    template: "%s | Pureable",
   },
   description:
-    "Puroable offers premium chemical-free skincare, haircare and bodycare with a luxury, nature-first experience.",
+    "Pureable offers premium chemical-free skincare, haircare and bodycare with a luxury, nature-first experience.",
   keywords: [
-    "Puroable",
+    "Pureable",
     "chemical free skincare",
     "premium beauty",
     "natural cosmetics",
@@ -39,28 +39,29 @@ export const metadata: Metadata = {
     "luxury skincare India",
   ],
   openGraph: {
-    title: "Puroable | Premium Chemical-Free Beauty",
+    title: "Pureable | Premium Chemical-Free Beauty",
     description:
       "Discover premium chemical-free skincare, haircare and bodycare crafted for modern luxury wellness.",
-    url: "https://puroable.com",
-    siteName: "Puroable",
+    url: "https://pureable.com",
+    siteName: "Pureable",
     type: "website",
     images: [
       {
-        url: "https://puroable.com/og-image.jpg",
+        url: "https://pureable.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Puroable Premium Beauty",
+        alt: "Pureable Premium Beauty",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Puroable | Premium Chemical-Free Beauty",
+    title: "Pureable | Premium Chemical-Free Beauty",
     description:
       "Premium chemical-free skincare, haircare and bodycare with a luxury-first shopping experience.",
-    images: ["https://puroable.com/og-image.jpg"],
+    images: ["https://pureable.com/og-image.jpg"],
   },
+
 };
 
 export default function RootLayout({

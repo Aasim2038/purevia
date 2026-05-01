@@ -1,28 +1,29 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
+
 export default function CartDrawer() {
-  const { isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart } = useCart();
-  
+  const { isCartOpen, setIsCartOpen, items, updateQuantity, removeFromCart, settings } = useCart();
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const freeShippingThreshold = settings.freeShippingThreshold;
   const fallbackImage = "linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)";
 
   return (
     <AnimatePresence>
       {isCartOpen && (
         <>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsCartOpen(false)}
             className="fixed inset-0 bg-[rgba(26,22,16,0.4)] backdrop-blur-sm z-[1000] cursor-pointer"
           />
-          <motion.div 
+          <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -31,14 +32,14 @@ export default function CartDrawer() {
           >
             <div className="flex justify-between items-center p-6 border-b border-[rgba(138,158,126,0.2)]">
               <h2 className="font-serif text-[1.8rem] text-[var(--color-text)] font-light" style={{ fontFamily: 'var(--font-cormorant)' }}>Your Cart</h2>
-              <button 
+              <button
                 onClick={() => setIsCartOpen(false)}
                 className="text-[2rem] leading-none text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors focus:outline-none font-light"
               >
                 &times;
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
               {items.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-60">
@@ -49,24 +50,24 @@ export default function CartDrawer() {
                 <div className="flex flex-col gap-8">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-5 items-center bg-white p-4 rounded-[16px] border border-[rgba(138,158,126,0.1)] shadow-[0_4px_10px_rgba(138,158,126,0.02)]">
-<div className="w-[85px] h-[85px] rounded-[10px] shrink-0 overflow-hidden border border-[rgba(138,158,126,0.2)] relative">
-                    {item.imageUrl ? (
-                      <Image src={item.imageUrl} alt={item.name} fill className="w-full h-full object-cover" />
+                      <div className="w-[85px] h-[85px] rounded-[10px] shrink-0 overflow-hidden border border-[rgba(138,158,126,0.2)] relative">
+                        {item.imageUrl ? (
+                          <Image src={item.imageUrl} alt={item.name} fill className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full" style={{ background: fallbackImage }} />
                         )}
                       </div>
-                      
+
                       <div className="flex-1 flex flex-col justify-center">
                         <div className="flex justify-between gap-2 items-start mb-1">
                           <h3 className="font-serif text-[1.2rem] leading-tight font-light text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>{item.name}</h3>
                           <button onClick={() => removeFromCart(item.id)} className="text-[0.65rem] uppercase tracking-wider text-red-500/70 hover:text-red-600 transition-colors shrink-0 focus:outline-none">Remove</button>
                         </div>
-                        
+
                         <div className="text-[var(--color-earth)] italic font-light font-serif mb-3 text-[1.1rem]" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{item.price}</div>
-                        
+
                         <div className="flex items-center bg-[var(--color-cream)] rounded-full border border-[rgba(138,158,126,0.2)] h-8 w-fit">
-                          <button disabled={item.name.includes("Pack of") ? item.quantity <= 3 : false} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-l-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">-</button>
+                          <button disabled={item.quantity <= (item.minQty || 1)} onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-8 h-full flex justify-center items-center text-[var(--color-sage-dark)] hover:bg-[var(--color-warm)] transition-colors rounded-l-full focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">-</button>
                           <span className="text-[0.8rem] font-medium w-6 text-center text-[var(--color-text)]">{item.quantity}</span>
                           <button
                             disabled={typeof item.maxStock === "number" && item.quantity >= item.maxStock}
@@ -94,16 +95,16 @@ export default function CartDrawer() {
                   <span className="text-[0.85rem] uppercase tracking-[0.15em] text-[var(--color-text-muted)]">Subtotal</span>
                   <span className="font-serif text-[1.8rem] font-light italic text-[var(--color-text)]" style={{ fontFamily: 'var(--font-cormorant)' }}>₹{subtotal}</span>
                 </div>
-                {299 - subtotal > 0 ? (
+                {freeShippingThreshold - subtotal > 0 ? (
                   <div className="text-[0.75rem] text-[#D48806] text-center mb-4 font-medium uppercase tracking-wider">
-                    Add ₹{299 - subtotal} more for <strong className="font-bold">FREE Delivery!</strong>
+                    Add ₹{freeShippingThreshold - subtotal} more for <strong className="font-bold">FREE Delivery!</strong>
                   </div>
                 ) : (
                   <div className="text-[0.75rem] text-[var(--color-sage-dark)] text-center mb-4 font-medium uppercase tracking-wider">
                     You have unlocked FREE Delivery!
                   </div>
                 )}
-                <Link 
+                <Link
                   href="/checkout"
                   onClick={() => setIsCartOpen(false)}
                   className="block w-full text-center bg-[var(--color-sage-dark)] text-[#F7F3ED] py-[1.2rem] uppercase tracking-[0.1em] text-[0.85rem] rounded-full transition-all duration-300 shadow-[0_4px_15px_rgba(138,158,126,0.3)] hover:shadow-[0_8px_25px_rgba(138,158,126,0.4)] hover:-translate-y-1 focus:outline-none no-underline"
