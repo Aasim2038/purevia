@@ -22,6 +22,7 @@ export default function AdminProductsPage() {
   const [imagePreviews, setImagePreviews] = useState<(string | null)[]>([null, null]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [mediaToDelete, setMediaToDelete] = useState<string[]>([]);
   const [editProductId, setEditProductId] = useState<string | null>(null);
   const imageInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -117,6 +118,7 @@ export default function AdminProductsPage() {
     setImagePreviews([null, null]);
     setVideoFile(null);
     setVideoPreview(null);
+    setMediaToDelete([]);
     setEditProductId(null);
     setModalType(type);
   };
@@ -143,8 +145,33 @@ export default function AdminProductsPage() {
     setVideoPreview(product.videoUrl || null);
     setImageFiles([null, null]);
     setVideoFile(null);
+    setMediaToDelete([]);
     setModalType('product');
+  };
 
+  const handleDeleteMedia = (type: 'image' | 'video', index?: number) => {
+    if (type === 'image' && index !== undefined) {
+      const urlToDelete = imagePreviews[index];
+      if (urlToDelete && !urlToDelete.startsWith('blob:')) {
+        setMediaToDelete(prev => [...prev, urlToDelete]);
+      }
+      setImagePreviews(prev => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+      setImageFiles(prev => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+    } else if (type === 'video') {
+      if (videoPreview && !videoPreview.startsWith('blob:')) {
+        setMediaToDelete(prev => [...prev, videoPreview]);
+      }
+      setVideoPreview(null);
+      setVideoFile(null);
+    }
   };
 
   const handleDeleteClick = (product: any) => {
@@ -234,6 +261,7 @@ export default function AdminProductsPage() {
         ...formData,
         imageUrls: uploadedImageUrls,
         videoUrl: uploadedVideoUrl,
+        mediaToDelete,
         ...(editProductId && { id: editProductId }),
       };
 
@@ -460,7 +488,16 @@ export default function AdminProductsPage() {
                       className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex flex-col items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] gap-2 overflow-hidden relative"
                     >
                       {imagePreviews[slotIndex] ? (
-                        <Image src={imagePreviews[slotIndex] || ''} alt={`Image ${slotIndex + 1}`} fill className="w-full h-full object-cover" />
+                        <div className="relative w-full h-full">
+                          <Image src={imagePreviews[slotIndex] || ''} alt={`Image ${slotIndex + 1}`} fill className="w-full h-full object-cover" />
+                          <button 
+                            type="button" 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteMedia('image', slotIndex); }}
+                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+                          >
+                            <span className="text-[10px]">✕</span>
+                          </button>
+                        </div>
                       ) : (
                         <>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -479,10 +516,19 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => videoInputRef.current?.click()}
-                    className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] overflow-hidden"
+                    className="w-[92px] h-[92px] bg-[#FAF9F7] rounded-2xl border border-dashed border-[rgba(196,168,130,0.5)] flex items-center justify-center hover:bg-[var(--color-cream)] transition-colors text-[var(--color-text-muted)] overflow-hidden relative"
                   >
                     {videoPreview ? (
-                      <video src={videoPreview} className="w-full h-full object-cover" />
+                      <div className="relative w-full h-full">
+                        <video src={videoPreview} className="w-full h-full object-cover" />
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteMedia('video'); }}
+                          className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors z-10"
+                        >
+                          <span className="text-[10px]">✕</span>
+                        </button>
+                      </div>
                     ) : (
                       <span className="text-[0.58rem] uppercase tracking-[0.08em] font-medium">Video</span>
                     )}

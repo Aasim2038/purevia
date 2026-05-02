@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { supabase } from '@/lib/supabaseClient';
+
+const extractPathFromUrl = (url: string, bucket: string) => {
+  try {
+    const parts = url.split(`/storage/v1/object/public/${bucket}/`);
+    return parts.length > 1 ? parts[1] : null;
+  } catch (err) {
+    return null;
+  }
+};
 
 export async function GET() {
   try {
@@ -63,11 +73,24 @@ export async function PATCH(req: Request) {
     const {
       id, name, price, category, stock, description, ingredients, howToUse,
       isFeatured, showInGrid, isKit, minOrderQty, imageUrls, videoUrl,
-      packs, kitItems
+      packs, kitItems, mediaToDelete
     } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    }
+
+    // Cleanup deleted media from storage
+    if (Array.isArray(mediaToDelete) && mediaToDelete.length > 0) {
+      for (const url of mediaToDelete) {
+        if (!url) continue;
+        const isVideo = url.includes('product-videos');
+        const bucket = isVideo ? 'product-videos' : 'product-images';
+        const path = extractPathFromUrl(url, bucket);
+        if (path) {
+          await supabase.storage.from(bucket).remove([path]);
+        }
+      }
     }
 
     // Ensure packs and kitItems are properly stringified for JSON storage
@@ -92,8 +115,8 @@ export async function PATCH(req: Request) {
         showInGrid: Boolean(showInGrid),
         isKit: Boolean(isKit),
         minOrderQty: Number(minOrderQty) || 1,
-        ...(imageUrls?.length > 0 && { images: imageUrls }),
-        ...(videoUrl !== undefined && { videoUrl }),
+        images: imageUrls || [],
+        videoUrl,
         ...(packsValue !== undefined && { packs: packsValue }),
         ...(kitItemsValue !== undefined && { kitItems: kitItemsValue }),
       },
@@ -113,6 +136,27 @@ export async function DELETE(req: Request) {
 
     if (!id) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    }
+
+    // Fetch product to get media URLs for cleanup
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { images: true, videoUrl: true }
+    });
+
+    if (product) {
+      // Delete images
+      if (Array.isArray(product.images)) {
+        for (const url of product.images) {
+          const path = extractPathFromUrl(url, 'product-images');
+          if (path) await supabase.storage.from('product-images').remove([path]);
+        }
+      }
+      // Delete video
+      if (product.videoUrl) {
+        const path = extractPathFromUrl(product.videoUrl, 'product-videos');
+        if (path) await supabase.storage.from('product-videos').remove([path]);
+      }
     }
 
     await prisma.product.delete({

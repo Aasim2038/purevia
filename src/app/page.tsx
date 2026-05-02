@@ -1,3 +1,4 @@
+export const revalidate = 60;
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import ProductCard, { ProductType } from "@/components/ui/ProductCard";
