@@ -16,7 +16,7 @@ type CheckoutStep = 'shipping' | 'payment';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { items, clearCart, isCartHydrated, settings } = useCart();
   const [activeStep, setActiveStep] = useState<CheckoutStep>('shipping');
   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
@@ -38,47 +38,12 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("");
 
   useEffect(() => {
-    // 1. Restore from localStorage if guest was redirected
-    const savedData = localStorage.getItem('pureable_checkout_data');
-    const autoTrigger = localStorage.getItem('pureable_checkout_auto_trigger');
-
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setFormData(prev => ({ ...prev, ...(parsed.formData || {}) }));
-        setCoords(parsed.coords || null);
-        setPaymentMethod(parsed.paymentMethod || "");
-        
-        // If we just returned from signup, trigger the action ONLY if data is valid and cart is ready
-        if (autoTrigger === 'true' && session?.user && isCartHydrated) {
-          const isDataComplete = parsed.formData?.firstName?.trim() && 
-                                parsed.formData?.phone?.trim() && 
-                                parsed.formData?.address?.trim() && 
-                                parsed.formData?.city?.trim() && 
-                                parsed.formData?.pin?.trim() &&
-                                items.length > 0;
-
-          if (isDataComplete) {
-            // Use a small timeout to ensure everything is ready
-            const timer = setTimeout(() => {
-              if (parsed.isOnlinePayment) {
-                handleRazorpayPayment();
-              } else {
-                handlePlaceOrder();
-              }
-            }, 800);
-            return () => clearTimeout(timer);
-          } else {
-            // Data incomplete or cart empty, clear auto-trigger flag so it doesn't try again, 
-            // but keep data so user can fix it manually
-            localStorage.removeItem('pureable_checkout_auto_trigger');
-          }
-        }
-      } catch (e) {
-        console.error("Failed to restore checkout data", e);
-      }
+    if (status === 'unauthenticated') {
+      router.push('/login?callbackUrl=/checkout');
     }
+  }, [status, router]);
 
+  useEffect(() => {
     if (!session?.user) return;
 
     const loadSavedAddress = async () => {
@@ -103,7 +68,7 @@ export default function CheckoutPage() {
     };
 
     loadSavedAddress();
-  }, [session, isCartHydrated, items.length]);
+  }, [session]);
 
   const handleLocationClick = () => {
     setGeoLoading(true);
@@ -201,10 +166,7 @@ export default function CheckoutPage() {
         throw new Error('Failed to place order');
       }
 
-      // Success: Clear the specific checkout data immediately
-      localStorage.removeItem('pureable_checkout_data');
-      localStorage.removeItem('pureable_checkout_auto_trigger');
-
+      // Success: Clear cart and redirect
       const data = await res.json();
       clearCart();
       router.push(`/checkout/success?orderId=${encodeURIComponent(data.orderId)}`);
@@ -266,19 +228,6 @@ export default function CheckoutPage() {
   };
 
   const handleCheckoutAction = () => {
-    if (!session?.user) {
-      // Save data and redirect to signup
-      localStorage.setItem('pureable_checkout_data', JSON.stringify({
-        formData,
-        coords,
-        paymentMethod,
-        isOnlinePayment
-      }));
-      localStorage.setItem('pureable_checkout_auto_trigger', 'true');
-      router.push('/signup?callbackUrl=/checkout');
-      return;
-    }
-
     if (isOnlinePayment) {
       handleRazorpayPayment();
     } else {
@@ -372,6 +321,19 @@ export default function CheckoutPage() {
   );
 
   const BRAND_NAME = "Pureable";
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-cream)]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[var(--color-sage-dark)] border-t-transparent rounded-full animate-spin"></div>
+          <p className="font-serif italic text-[var(--color-sage-dark)] text-xl">Verifying your session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) return null;
 
   return (
     <main className="bg-[var(--color-cream)] pt-[90px] pb-40 lg:pb-32 min-h-screen select-none relative">

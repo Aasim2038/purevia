@@ -20,21 +20,6 @@ export default function SignupPage() {
 
   React.useEffect(() => {
     setSearchParams(new URLSearchParams(window.location.search));
-
-    // Auto-fill from checkout data
-    const savedData = localStorage.getItem('pureable_checkout_data');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.formData) {
-          const fullName = `${parsed.formData.firstName || ''} ${parsed.formData.lastName || ''}`.trim();
-          if (fullName) setName(fullName);
-          if (parsed.formData.email) setEmail(parsed.formData.email);
-        }
-      } catch (e) {
-        console.error("Failed to parse checkout data for auto-fill", e);
-      }
-    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
