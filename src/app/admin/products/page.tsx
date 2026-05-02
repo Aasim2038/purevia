@@ -283,7 +283,7 @@ export default function AdminProductsPage() {
           </div>
         </header>
 
-        <div className="p-8 md:p-12 pl-8 md:pl-12 pt-8 w-full max-w-6xl mx-auto flex-1">
+        <div className="p-8 md:p-12 w-full max-w-7xl mx-auto flex-1">
           <div className="flex justify-between items-center mb-8">
             <h2 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">Inventory Management</h2>
             <div className="flex items-center gap-3">
@@ -297,7 +297,7 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          <div className="w-full max-w-[400px] mb-8">
+          <div className="w-full max-w-xl mb-6">
             <div className="relative">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>

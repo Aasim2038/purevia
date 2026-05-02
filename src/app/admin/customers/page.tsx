@@ -62,7 +62,7 @@ export default function AdminCustomersPage() {
           </div>
         </header>
 
-        <div className="p-8 md:p-12 pl-8 md:pl-12 pt-8 w-full max-w-[1500px] mx-auto flex-1">
+        <div className="p-8 md:p-12 w-full max-w-7xl mx-auto flex-1">
           <div className="flex flex-col gap-5 mb-8">
             <h2 className="font-serif text-[1.4rem] font-light text-[var(--color-text)]">Registered Customers</h2>
 
