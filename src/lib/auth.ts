@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
-        if (!user) return null;
+        if (!user || user.isBlocked) return null;
 
         const passwordMatches = await compare(credentials.password, user.password);
         if (!passwordMatches) return null;

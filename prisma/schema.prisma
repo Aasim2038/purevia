@@ -37,6 +37,7 @@ model User {
   city      String?
   pinCode   String?
   role      Role       @default(USER)
+  isBlocked Boolean    @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
