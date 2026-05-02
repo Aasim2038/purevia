@@ -47,11 +47,15 @@ export default function CheckoutPage() {
         setCoords(parsed.coords || null);
         setPaymentMethod(parsed.paymentMethod || "");
         
-        // If we just returned from signup, trigger the action
+        // If we just returned from signup, trigger the action ONLY if data is valid
         const autoTrigger = localStorage.getItem('pureable_checkout_auto_trigger');
-        if (autoTrigger === 'true' && session?.user) {
-          localStorage.removeItem('pureable_checkout_auto_trigger');
-          localStorage.removeItem('pureable_checkout_data');
+        const isDataComplete = parsed.formData?.firstName && 
+                              parsed.formData?.phone && 
+                              parsed.formData?.address && 
+                              parsed.formData?.city && 
+                              parsed.formData?.pin;
+
+        if (autoTrigger === 'true' && session?.user && isDataComplete) {
           // Use a small timeout to ensure everything is ready
           setTimeout(() => {
             if (parsed.isOnlinePayment) {
@@ -59,7 +63,11 @@ export default function CheckoutPage() {
             } else {
               handlePlaceOrder();
             }
-          }, 500);
+          }, 800);
+        } else if (autoTrigger === 'true') {
+          // Data incomplete, clear auto-trigger flag so it doesn't try again, 
+          // but keep data so user can fix it manually
+          localStorage.removeItem('pureable_checkout_auto_trigger');
         }
       } catch (e) {
         console.error("Failed to restore checkout data", e);
