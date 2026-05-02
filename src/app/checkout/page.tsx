@@ -38,6 +38,34 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("");
 
   useEffect(() => {
+    // 1. Restore from localStorage if guest was redirected
+    const savedData = localStorage.getItem('pureable_checkout_data');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setFormData(parsed.formData || formData);
+        setCoords(parsed.coords || null);
+        setPaymentMethod(parsed.paymentMethod || "");
+        
+        // If we just returned from signup, trigger the action
+        const autoTrigger = localStorage.getItem('pureable_checkout_auto_trigger');
+        if (autoTrigger === 'true' && session?.user) {
+          localStorage.removeItem('pureable_checkout_auto_trigger');
+          localStorage.removeItem('pureable_checkout_data');
+          // Use a small timeout to ensure everything is ready
+          setTimeout(() => {
+            if (parsed.isOnlinePayment) {
+              handleRazorpayPayment();
+            } else {
+              handlePlaceOrder();
+            }
+          }, 500);
+        }
+      } catch (e) {
+        console.error("Failed to restore checkout data", e);
+      }
+    }
+
     if (!session?.user) return;
 
     const loadSavedAddress = async () => {
@@ -221,6 +249,19 @@ export default function CheckoutPage() {
   };
 
   const handleCheckoutAction = () => {
+    if (!session?.user) {
+      // Save data and redirect to signup
+      localStorage.setItem('pureable_checkout_data', JSON.stringify({
+        formData,
+        coords,
+        paymentMethod,
+        isOnlinePayment
+      }));
+      localStorage.setItem('pureable_checkout_auto_trigger', 'true');
+      router.push('/signup?callbackUrl=/checkout');
+      return;
+    }
+
     if (isOnlinePayment) {
       handleRazorpayPayment();
     } else {
