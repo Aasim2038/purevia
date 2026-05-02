@@ -188,6 +188,10 @@ export default function CheckoutPage() {
         throw new Error('Failed to place order');
       }
 
+      // Success: Clear the specific checkout data immediately
+      localStorage.removeItem('pureable_checkout_data');
+      localStorage.removeItem('pureable_checkout_auto_trigger');
+
       const data = await res.json();
       clearCart();
       router.push(`/checkout/success?orderId=${encodeURIComponent(data.orderId)}`);
@@ -296,7 +300,7 @@ export default function CheckoutPage() {
                 <div className="relative mt-2">
                   <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-[10px] border border-[rgba(138,158,126,0.15)] overflow-hidden bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] relative">
                     {item.imageUrl ? (
-                      <Image src={item.imageUrl} alt={item.name} fill className="w-full h-full object-cover" />
+                      <Image src={item.imageUrl} alt={item.name} fill priority className="w-full h-full object-cover" />
                     ) : null}
                   </div>
                   <span className="absolute -top-3 -right-3 w-[22px] h-[22px] flex items-center justify-center bg-[var(--color-sage-dark)] text-white text-[0.65rem] rounded-full shadow-sm z-10">{item.quantity}</span>

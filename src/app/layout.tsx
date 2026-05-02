@@ -61,7 +61,10 @@ export const metadata: Metadata = {
       "Premium chemical-free skincare, haircare and bodycare with a luxury-first shopping experience.",
     images: ["https://pureable.com/og-image.jpg"],
   },
-
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
