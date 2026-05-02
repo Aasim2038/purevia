@@ -26,9 +26,10 @@ interface ProductCardProps {
   product: ProductType;
   variants?: Variants;
   layout?: boolean;
+  priority?: boolean;
 }
 
-export default function ProductCard({ product, variants, layout }: ProductCardProps) {
+export default function ProductCard({ product, variants, layout, priority }: ProductCardProps) {
   const { addToCart } = useCart();
   const [isAdded, setIsAdded] = useState(false);
 
@@ -75,7 +76,7 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
       <div className="aspect-square sm:aspect-auto sm:h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
         <div className="absolute inset-0 z-0 opacity-80 mix-blend-multiply" style={{ background: product.bg }} />
         {thumbnail ? (
-          <Image src={thumbnail} alt={product.name} fill className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+          <Image src={thumbnail} alt={product.name} fill priority={priority} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
         ) : (
           <div className="text-[5rem] relative z-[1] drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110 group-hover:-translate-y-1">
             {product.icon}
@@ -106,7 +107,7 @@ export default function ProductCard({ product, variants, layout }: ProductCardPr
           </div>
           <button 
             onClick={handleAdd}
-            className={`w-[36px] h-[36px] border-none rounded-full flex items-center justify-center transition-all duration-300 shadow-sm focus:outline-none active:scale-95 ${isAdded ? 'bg-[var(--color-sage-dark)] text-white scale-110' : 'bg-[var(--color-text)] text-white hover:bg-[var(--color-sage-dark)] hover:scale-110'}`}
+            className={`w-[44px] h-[44px] border-none rounded-full flex items-center justify-center transition-all duration-300 shadow-sm focus:outline-none active:scale-95 ${isAdded ? 'bg-[var(--color-sage-dark)] text-white scale-110' : 'bg-[var(--color-text)] text-white hover:bg-[var(--color-sage-dark)] hover:scale-110'}`}
             aria-label="Add to Cart"
           >
             {isAdded ? (

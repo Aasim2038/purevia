@@ -158,8 +158,8 @@ export default function ShopClient({ initialProducts, initialCategory, initialTa
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             >
               <AnimatePresence mode="popLayout">
-                {filteredAndSortedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} layout={true} />
+                {filteredAndSortedProducts.map((product, index) => (
+                  <ProductCard key={product.id} product={product} layout={true} priority={index < 4} />
                 ))}
               </AnimatePresence>
             </motion.div>

@@ -37,7 +37,7 @@ export default function Footer() {
             <li><Link href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">WhatsApp</Link></li>
             <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Instagram</Link></li>
             <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Contact Us</Link></li>
-            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
+            <li><Link href="/privacy-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
           </ul>
         </div>
       </div>

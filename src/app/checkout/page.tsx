@@ -141,11 +141,12 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          email: formData.email.trim() === '' ? null : formData.email.trim(),
           paymentMethod,
-          razorpayPaymentId, // Store the payment ID if available
-          razorpayOrderId,   // Store the order ID if available
-          lat: coords?.lat,
-          lng: coords?.lng,
+          razorpayPaymentId: razorpayPaymentId || null,
+          razorpayOrderId: razorpayOrderId || null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           shippingAmount: shipping,
           grandTotal: total,
           items: items.map((item) => ({
@@ -572,6 +573,9 @@ export default function CheckoutPage() {
                   {isSubmitting ? <div className="w-5 h-5 border-2 border-[var(--color-text-muted)] border-t-transparent rounded-full animate-spin"></div> : "Place Order"}
                 </motion.button>
               )}
+              <div className="mt-6 text-[0.7rem] text-center text-[var(--color-text-muted)] leading-relaxed">
+                By placing an order, you agree to our <Link href="/privacy-policy" className="underline hover:text-[var(--color-sage-dark)]">Privacy Policy</Link>.
+              </div>
             </div>
           </motion.div>
 
@@ -607,6 +611,9 @@ export default function CheckoutPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <div className="lg:hidden px-6 pb-10 -mt-10 text-[0.65rem] text-center text-[var(--color-text-muted)]">
+        By placing an order, you agree to our <Link href="/privacy-policy" className="underline">Privacy Policy</Link>.
+      </div>
     </main>
   );
 }

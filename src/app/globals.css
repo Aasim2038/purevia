@@ -8,7 +8,7 @@
   --color-earth: #C4A882;
   --color-earth-dark: #8B6F4E;
   --color-text: #2C2416;
-  --color-text-muted: #7A6D5C;
+  --color-text-muted: #5F5548;
   --color-white: #FDFAF6;
 
   --font-sans: var(--font-dm-sans);
@@ -29,9 +29,9 @@ body {
 
 /* Base custom interactive states */
 .btn-primary {
-  @apply bg-text text-white px-9 py-4 text-[0.82rem] tracking-[0.15em] uppercase no-underline rounded-full flex items-center justify-center transition-all duration-300 hover:bg-sage-dark hover:-translate-y-0.5;
+  @apply bg-text text-white px-9 py-4 min-h-[44px] text-[0.82rem] tracking-[0.15em] uppercase no-underline rounded-full flex items-center justify-center transition-all duration-300 hover:bg-sage-dark hover:-translate-y-0.5;
 }
 
 .btn-ghost {
-  @apply text-text-muted text-[0.82rem] tracking-[0.1em] uppercase flex items-center gap-2 transition-all duration-300 hover:text-sage-dark hover:gap-3;
+  @apply text-text-muted text-[0.82rem] tracking-[0.1em] min-h-[44px] px-4 uppercase flex items-center gap-2 transition-all duration-300 hover:text-sage-dark hover:gap-3;
 }

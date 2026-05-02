@@ -218,32 +218,40 @@ function ProfileContent() {
                 ) : orders.length === 0 ? (
                   <p className="text-[14px] text-[var(--color-text-muted)]">No orders yet.</p>
                 ) : (
-                  orders.map((order) => (
+                  orders.slice(0, 5).map((order) => (
                     <div key={order.id} className="bg-white rounded-xl border border-[rgba(196,168,130,0.2)] px-4 py-3 flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden border border-[rgba(196,168,130,0.25)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] shrink-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-[rgba(196,168,130,0.25)] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] shrink-0 relative">
                         {order.orderItems[0]?.product?.images?.[0] ? (
                           <Image src={order.orderItems[0].product.images[0]} alt={order.orderItems[0].productName} fill className="w-full h-full object-cover" />
                         ) : null}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">{getShortOrderId(order.id)}</div>
-                        <div className="font-medium text-[var(--color-text)] truncate">{order.orderItems[0]?.productName || "Order Item"}</div>
-                        <div className="text-[13px] text-[var(--color-text-muted)]">Total: <span className="text-[var(--color-text)]">₹{order.totalAmount}</span></div>
+                        <div className="text-[10px] uppercase tracking-[0.1em] text-[var(--color-text-muted)]">{getShortOrderId(order.id)}</div>
+                        <div className="font-medium text-[var(--color-text)] truncate text-[0.9rem]">{order.orderItems[0]?.productName || "Order Item"}</div>
+                        <div className="text-[12px] text-[var(--color-text-muted)]">₹{order.totalAmount} · {new Date(order.createdAt).toLocaleDateString()}</div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-[0.62rem] uppercase tracking-[0.08em] font-semibold ${statusPillClass[order.status]}`}>
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[0.55rem] uppercase tracking-[0.08em] font-semibold ${statusPillClass[order.status]}`}>
                           {order.status}
                         </span>
                         <button
                           type="button"
                           onClick={() => setSelectedOrder(order)}
-                          className="px-3 py-1.5 rounded-full border border-[rgba(138,158,126,0.35)] text-[0.65rem] tracking-[0.08em] uppercase text-[var(--color-sage-dark)] hover:bg-[var(--color-cream)]"
+                          className="text-[0.65rem] tracking-[0.08em] uppercase text-[var(--color-sage-dark)] hover:underline"
                         >
-                          View Details
+                          Details
                         </button>
                       </div>
                     </div>
                   ))
+                )}
+                {orders.length > 5 && (
+                  <Link 
+                    href="/profile/orders"
+                    className="block w-full text-center py-3 mt-2 border border-[rgba(138,158,126,0.3)] rounded-xl text-[0.7rem] uppercase tracking-[0.15em] text-[var(--color-sage-dark)] hover:bg-[var(--color-cream)] transition-colors"
+                  >
+                    View All Orders ({orders.length})
+                  </Link>
                 )}
               </div>
             )}

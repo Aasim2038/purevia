@@ -13,7 +13,7 @@ type ProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 async function getProductById(id: string) {
   return (prisma as any).product.findUnique({

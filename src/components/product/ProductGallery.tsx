@@ -72,6 +72,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                   src={activeMedia.src}
                   alt={`${product.name} ${activeIdx + 1}`}
                   fill
+                  priority
                   className="absolute inset-0 w-full h-full object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 50vw"
                 />

@@ -20,6 +20,7 @@ type HomeSectionProps = {
   subtitle: string;
   viewAllHref: string;
   products: ProductType[];
+  priorityCount?: number;
 };
 
 function ProductRailSection({ title, subtitle, viewAllHref, products }: HomeSectionProps) {
@@ -38,9 +39,12 @@ function ProductRailSection({ title, subtitle, viewAllHref, products }: HomeSect
       </div>
       <HorizontalScroller>
         <div className="flex gap-4 sm:gap-5 snap-x snap-mandatory">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <div key={product.id} className="w-[42vw] min-w-[160px] sm:w-[260px] md:w-[300px] sm:min-w-[260px] md:min-w-[300px] max-w-[320px] snap-start flex-shrink-0 touch-pan-y">
-              <ProductCard product={product} />
+              <ProductCard 
+  product={product} 
+  priority={index < 4} 
+/>
             </div>
           ))}
         </div>
@@ -210,7 +214,7 @@ async function GridExploreSection({ products }: { products: ProductType[] }) {
   );
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Home() {
   // Fetch products and best sellers in parallel
@@ -278,12 +282,14 @@ function ProductSliders({
           subtitle="Just Launched"
           products={newArrivals}
           viewAllHref="/shop?tag=New"
+          priorityCount={2}
         />
         <ProductRailSection
           title="Best Sellers"
           subtitle="Most Loved"
           products={bestSellers}
           viewAllHref="/shop?tag=Best%20Seller"
+          priorityCount={1}
         />
         <ProductRailSection
           title="Featured Products"

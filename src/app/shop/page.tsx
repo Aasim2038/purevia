@@ -4,7 +4,7 @@ import ShopClient from './ShopClient';
 import { ProductType } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/LoadingSkeleton';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 type ShopPageProps = {
   searchParams: Promise<{

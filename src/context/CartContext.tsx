@@ -6,7 +6,6 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
-  price: number;
   imageUrl?: string | null;
   maxStock?: number;
   minQty?: number;
@@ -59,7 +58,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           name: String(item.name ?? ""),
           price: Number(item.price ?? 0),
           quantity: Number(item.quantity ?? 0),
-          imageUrl: item.imageUrl ? String(item.imageUrl) : null,
           imageUrl: item.imageUrl ? String(item.imageUrl) : null,
           maxStock: Number(item.maxStock) > 0 ? Number(item.maxStock) : undefined,
           minQty: Number(item.minQty) > 0 ? Number(item.minQty) : undefined,
