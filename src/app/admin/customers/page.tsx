@@ -5,14 +5,13 @@ export const dynamic = 'force-dynamic';
 import React, { useEffect, useMemo, useState } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Toaster, toast } from "sonner";
-import { Users, Search, Trash2, Ban, UserCheck, ShieldAlert } from "lucide-react";
+import { Search, Trash2, ShieldAlert } from "lucide-react";
 
 type Customer = {
   id: string;
   name: string | null;
   email: string | null;
   phone: string | null;
-  isBlocked: boolean;
   createdAt: string;
 };
 
@@ -52,24 +51,6 @@ export default function AdminCustomersPage() {
       return nameMatch || emailMatch || phoneMatch;
     });
   }, [customers, searchQuery]);
-
-  const handleToggleBlock = async (customer: Customer) => {
-    try {
-      const res = await fetch("/api/admin/customers", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: customer.id, isBlocked: !customer.isBlocked }),
-      });
-      if (!res.ok) throw new Error("Failed to update account status");
-      
-      setCustomers(prev => prev.map(c => 
-        c.id === customer.id ? { ...c, isBlocked: !c.isBlocked } : c
-      ));
-      toast.success(`User ${customer.isBlocked ? 'unblocked' : 'blocked'} successfully`);
-    } catch (error) {
-      toast.error("Error updating account status");
-    }
-  };
 
   const confirmDelete = (customer: Customer) => {
     setCustomerToDelete(customer);
@@ -135,7 +116,6 @@ export default function AdminCustomersPage() {
                     <th className="px-6 py-5">Name</th>
                     <th className="px-6 py-5">Email Address</th>
                     <th className="px-6 py-5">Phone Number</th>
-                    <th className="px-6 py-5">Status</th>
                     <th className="px-6 py-5">Joined Date</th>
                     <th className="px-6 py-5 text-right">Actions</th>
                   </tr>
@@ -143,23 +123,18 @@ export default function AdminCustomersPage() {
                 <tbody className="text-[0.9rem] text-[var(--color-text)]">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-16 font-serif italic text-[var(--color-text-muted)]">Loading customers...</td>
+                      <td colSpan={5} className="text-center py-16 font-serif italic text-[var(--color-text-muted)]">Loading customers...</td>
                     </tr>
                   ) : filteredCustomers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-16 font-serif italic text-[var(--color-text-muted)]">No customers found.</td>
+                      <td colSpan={5} className="text-center py-16 font-serif italic text-[var(--color-text-muted)]">No customers found.</td>
                     </tr>
                   ) : (
                     filteredCustomers.map((customer) => (
-                      <tr key={customer.id} className={`border-b border-[#F5F3ED] hover:bg-[#FAF9F7] transition-colors last:border-0 ${customer.isBlocked ? 'opacity-60 bg-[#FAFAFA]' : ''}`}>
+                      <tr key={customer.id} className="border-b border-[#F5F3ED] hover:bg-[#FAF9F7] transition-colors last:border-0">
                         <td className="px-6 py-4 font-medium">{customer.name || "N/A"}</td>
                         <td className="px-6 py-4 text-[0.85rem] text-[var(--color-text-muted)]">{customer.email || "N/A"}</td>
                         <td className="px-6 py-4 text-[0.85rem] text-[var(--color-text-muted)]">{customer.phone || "N/A"}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.64rem] uppercase tracking-[0.08em] font-semibold ${customer.isBlocked ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                            {customer.isBlocked ? 'Blocked' : 'Active'}
-                          </span>
-                        </td>
                         <td className="px-6 py-4">
                           <div className="text-[0.75rem] text-[var(--color-text-muted)]">
                             {new Date(customer.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
@@ -167,13 +142,6 @@ export default function AdminCustomersPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
-                            <button 
-                              onClick={() => handleToggleBlock(customer)}
-                              className={`p-2 rounded-lg transition-colors ${customer.isBlocked ? 'text-green-600 hover:bg-green-50' : 'text-amber-600 hover:bg-amber-50'}`}
-                              title={customer.isBlocked ? "Unblock Account" : "Block Account"}
-                            >
-                              {customer.isBlocked ? <UserCheck size={18} /> : <Ban size={18} />}
-                            </button>
                             <button 
                               onClick={() => confirmDelete(customer)}
                               className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
