@@ -215,8 +215,6 @@ async function GridExploreSection({ products }: { products: ProductType[] }) {
   );
 }
 
-export const revalidate = 60;
-
 export default async function Home() {
   // Fetch products and best sellers in parallel
   const [dbProducts, bestSellerRows] = await Promise.all([
