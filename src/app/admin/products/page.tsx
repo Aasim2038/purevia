@@ -12,6 +12,7 @@ export default function AdminProductsPage() {
   const [modalType, setModalType] = useState<'product' | 'kit' | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -259,6 +260,12 @@ export default function AdminProductsPage() {
     }
   };
 
+  const filteredProducts = products.filter(p => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+    return p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query);
+  });
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] flex select-none relative">
       <Toaster position="bottom-right" richColors />
@@ -290,6 +297,21 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
+          <div className="w-full max-w-[400px] mb-8">
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </div>
+              <input 
+                type="text" 
+                placeholder="Search products by Name or Category" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white border border-[#EAE6DF] rounded-xl pl-12 pr-4 py-3 text-[0.88rem] outline-none focus:border-[var(--color-sage-dark)] shadow-sm transition-all"
+              />
+            </div>
+          </div>
+
           <div className="bg-white rounded-2xl border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)] overflow-hidden">
             {/* Table view for larger screens */}
             <div className="hidden md:block overflow-x-auto min-h-[300px]">
@@ -309,12 +331,12 @@ export default function AdminProductsPage() {
                     <tr>
                       <td colSpan={6} className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">Loading products...</td>
                     </tr>
-                  ) : products.length === 0 ? (
+                  ) : filteredProducts.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">No products fully synced yet. Click "New Product" to begin building your inventory!</td>
+                      <td colSpan={6} className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">No products matched your search.</td>
                     </tr>
                   ) : (
-                    products.map((product) => {
+                    filteredProducts.map((product) => {
                       const theme = categoryPresets[product.category] || { icon: '📦', bg: '#F5E8F0' };
                       return (
                         <tr key={product.id} className="border-b border-[#F5F3ED] hover:bg-[#FAF9F7] transition-colors last:border-0 relative group">
@@ -360,11 +382,11 @@ export default function AdminProductsPage() {
             <div className="md:hidden min-h-[300px]">
               {loading ? (
                 <div className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">Loading products...</div>
-              ) : products.length === 0 ? (
-                <div className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">No products fully synced yet. Click "New Product" to begin building your inventory!</div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-10 font-serif italic text-[var(--color-text-muted)]">No products matched your search.</div>
               ) : (
                 <div className="space-y-4 p-4">
-                  {products.map((product) => {
+                  {filteredProducts.map((product) => {
                     const theme = categoryPresets[product.category] || { icon: '📦', bg: '#F5E8F0' };
                     return (
                       <div key={product.id} className="border border-[#EAE6DF] rounded-lg p-4 bg-[#FAF9F7] hover:bg-[#F5F3ED] transition-colors">
