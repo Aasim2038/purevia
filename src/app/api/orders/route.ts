@@ -59,26 +59,30 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const user = await getSessionUser();
-    const body = await req.json();
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      city,
-      pin,
-      paymentMethod,
-      items,
-      lat,
-      lng,
-      shippingAmount,
-      grandTotal,
-      razorpayOrderId,
-      razorpayPaymentId,
-    } = body ?? {};
+    const body = await req.json().catch(() => ({}));
+    
+    // 1. Extract with safe fallbacks to prevent crashes
+    const firstName = String(body.firstName || "").trim();
+    const lastName = String(body.lastName || "").trim();
+    const email = (body.email && String(body.email).trim() !== "") ? String(body.email).trim() : null;
+    const phone = String(body.phone || "").trim();
+    const address = String(body.address || "").trim();
+    const city = String(body.city || "").trim();
+    const pin = String(body.pin || "").trim();
+    const paymentMethod = String(body.paymentMethod || "cod").trim();
+    const items = Array.isArray(body.items) ? body.items : [];
+    
+    // 2. Handle numeric/location fields safely
+    const lat = (typeof body.lat === "number" && !isNaN(body.lat)) ? body.lat : null;
+    const lng = (typeof body.lng === "number" && !isNaN(body.lng)) ? body.lng : null;
+    const shippingAmount = Number(body.shippingAmount) || 0;
+    const grandTotal = Number(body.grandTotal) || 0;
+    
+    // 3. Razorpay fields
+    const razorpayOrderId = body.razorpayOrderId ? String(body.razorpayOrderId).trim() : null;
+    const razorpayPaymentId = body.razorpayPaymentId ? String(body.razorpayPaymentId).trim() : null;
 
-    const orderItems: IncomingOrderItem[] = Array.isArray(items) ? items : [];
+    const orderItems: IncomingOrderItem[] = items;
     if (!firstName || !phone || !address || !city || !pin || orderItems.length === 0) {
       return NextResponse.json({ error: "Missing required checkout data" }, { status: 400 });
     }
@@ -151,17 +155,17 @@ export async function POST(req: Request) {
         data: {
           userId: user?.id ?? null,
           customerName: customerName || "Customer",
-          customerEmail: (email && String(email).trim() !== '') ? String(email).trim() : null,
-          customerPhone: String(phone || "").trim() || "0000000000",
-          shippingAddress: String(address || "").trim() || "Address not provided",
-          shippingCity: String(city || "").trim() || "City",
-          shippingPinCode: String(pin || "").trim() || "000000",
-          paymentMethod: (paymentMethod && String(paymentMethod).trim() !== '') ? String(paymentMethod).trim() : null,
+          customerEmail: email,
+          customerPhone: phone || "0000000000",
+          shippingAddress: address || "Address not provided",
+          shippingCity: city || "City",
+          shippingPinCode: pin || "000000",
+          paymentMethod: paymentMethod,
           totalAmount: safeGrandTotal,
-          lat: (typeof lat === "number" && !isNaN(lat)) ? lat : null,
-          lng: (typeof lng === "number" && !isNaN(lng)) ? lng : null,
-          razorpayOrderId: (razorpayOrderId && String(razorpayOrderId).trim() !== '') ? String(razorpayOrderId).trim() : null,
-          razorpayPaymentId: (razorpayPaymentId && String(razorpayPaymentId).trim() !== '') ? String(razorpayPaymentId).trim() : null,
+          lat: lat,
+          lng: lng,
+          razorpayOrderId: razorpayOrderId,
+          razorpayPaymentId: razorpayPaymentId,
           paymentStatus: razorpayPaymentId ? 'PAID' : 'PENDING',
           orderItems: {
             create: cleanItems,

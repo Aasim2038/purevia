@@ -40,34 +40,39 @@ export default function CheckoutPage() {
   useEffect(() => {
     // 1. Restore from localStorage if guest was redirected
     const savedData = localStorage.getItem('pureable_checkout_data');
+    const autoTrigger = localStorage.getItem('pureable_checkout_auto_trigger');
+
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        setFormData(parsed.formData || formData);
+        setFormData(prev => ({ ...prev, ...(parsed.formData || {}) }));
         setCoords(parsed.coords || null);
         setPaymentMethod(parsed.paymentMethod || "");
         
-        // If we just returned from signup, trigger the action ONLY if data is valid
-        const autoTrigger = localStorage.getItem('pureable_checkout_auto_trigger');
-        const isDataComplete = parsed.formData?.firstName && 
-                              parsed.formData?.phone && 
-                              parsed.formData?.address && 
-                              parsed.formData?.city && 
-                              parsed.formData?.pin;
+        // If we just returned from signup, trigger the action ONLY if data is valid and cart is ready
+        if (autoTrigger === 'true' && session?.user && isCartHydrated) {
+          const isDataComplete = parsed.formData?.firstName?.trim() && 
+                                parsed.formData?.phone?.trim() && 
+                                parsed.formData?.address?.trim() && 
+                                parsed.formData?.city?.trim() && 
+                                parsed.formData?.pin?.trim() &&
+                                items.length > 0;
 
-        if (autoTrigger === 'true' && session?.user && isDataComplete) {
-          // Use a small timeout to ensure everything is ready
-          setTimeout(() => {
-            if (parsed.isOnlinePayment) {
-              handleRazorpayPayment();
-            } else {
-              handlePlaceOrder();
-            }
-          }, 800);
-        } else if (autoTrigger === 'true') {
-          // Data incomplete, clear auto-trigger flag so it doesn't try again, 
-          // but keep data so user can fix it manually
-          localStorage.removeItem('pureable_checkout_auto_trigger');
+          if (isDataComplete) {
+            // Use a small timeout to ensure everything is ready
+            const timer = setTimeout(() => {
+              if (parsed.isOnlinePayment) {
+                handleRazorpayPayment();
+              } else {
+                handlePlaceOrder();
+              }
+            }, 800);
+            return () => clearTimeout(timer);
+          } else {
+            // Data incomplete or cart empty, clear auto-trigger flag so it doesn't try again, 
+            // but keep data so user can fix it manually
+            localStorage.removeItem('pureable_checkout_auto_trigger');
+          }
         }
       } catch (e) {
         console.error("Failed to restore checkout data", e);
@@ -98,7 +103,7 @@ export default function CheckoutPage() {
     };
 
     loadSavedAddress();
-  }, [session]);
+  }, [session, isCartHydrated, items.length]);
 
   const handleLocationClick = () => {
     setGeoLoading(true);
