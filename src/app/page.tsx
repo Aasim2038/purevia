@@ -5,7 +5,6 @@ import ProductCard, { ProductType } from "@/components/ui/ProductCard";
 import HorizontalScroller from "@/components/storefront/HorizontalScroller";
 import Hero from "@/components/sections/Hero";
 import Marquee from "@/components/sections/Marquee";
-import Footer from "@/components/sections/Footer";
 import CategoryCircles from "@/components/sections/CategoryCircles";
 import Ingredients from "@/components/sections/Ingredients";
 import Testimonials from "@/components/sections/Testimonials";
@@ -259,7 +258,6 @@ export default async function Home() {
       <Testimonials />
       <GridExploreSection products={gridProducts} />
       <JoinFamilySection />
-      <Footer />
     </main>
   );
 }

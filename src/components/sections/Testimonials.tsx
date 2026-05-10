@@ -8,7 +8,7 @@ const testimonials = [
     text: `"My skin literally transformed in 3 weeks. No irritation, no breakouts — just clear, glowing skin. I will never go back to chemical products!"`,
     initials: "PR",
     name: "Priya Rao",
-    location: "Nagpur, Maharashtra"
+    location: "Aurangabad, Maharashtra"
   },
   {
     stars: "★★★★★",

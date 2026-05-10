@@ -67,6 +67,9 @@ export const metadata: Metadata = {
   },
 };
 
+import Footer from "@/components/sections/Footer";
+import WhatsAppContact from "@/components/ui/WhatsAppContact";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -74,6 +77,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              'name': 'Pureable',
+              'url': 'https://pureable.in',
+              'logo': 'https://pureable.in/logo.png',
+              'description': 'Premium Organic Skincare Brand offering Ayurvedic-inspired products.',
+              'sameAs': [
+                'https://www.facebook.com/pureable',
+                'https://www.instagram.com/pureable.in'
+              ]
+            })
+          }}
+        />
+      </head>
       <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
@@ -81,6 +103,8 @@ export default function RootLayout({
             <Navbar />
             <CartDrawer />
             {children}
+            <Footer />
+            <WhatsAppContact />
           </CartProvider>
         </AuthProvider>
       </body>

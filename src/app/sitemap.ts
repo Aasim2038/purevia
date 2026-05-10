@@ -1,16 +1,39 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from 'next';
+import prisma from '@/lib/prisma';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://pureable.com";
-  const now = new Date();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://pureable.in';
 
-  return [
-    { url: `${baseUrl}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
-    { url: `${baseUrl}/shop`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${baseUrl}/profile`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${baseUrl}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${baseUrl}/signup`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
-    { url: `${baseUrl}/terms-of-service`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
-  ];
+  // Static routes
+  const staticRoutes = [
+    '',
+    '/about',
+    '/shop',
+    '/privacy-policy',
+    '/terms-of-service',
+    '/refund-policy',
+    '/shipping-policy',
+  ].map((route) => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: route === '' ? 1 : 0.8,
+  }));
+
+  // Dynamic product routes
+  const products = await prisma.product.findMany({
+    select: {
+      id: true,
+      updatedAt: true,
+    },
+  });
+
+  const productRoutes = products.map((product) => ({
+    url: `${baseUrl}/product/${product.id}`,
+    lastModified: product.updatedAt || new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...productRoutes];
 }

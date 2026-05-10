@@ -97,7 +97,7 @@ export default function Hero() {
           {/* Eyebrow */}
           <motion.div variants={fadeUp as any} className="text-[0.78rem] tracking-[0.25em] uppercase text-[var(--color-sage-dark)] mb-6 flex items-center gap-3">
             <span className="block w-8 h-[1px] bg-[var(--color-sage-dark)]" />
-            Same Day Delivery in Nagpur · 100% Natural & Chemical Free
+            Same Day Delivery in Aurangabad · 100% Natural & Chemical Free
           </motion.div>
 
           {/* Title */}
@@ -111,6 +111,8 @@ export default function Hero() {
             natural
           </motion.h1>
 
+
+
           {/* Subtitle */}
           <motion.p variants={fadeUp as any} className="text-[1rem] text-[var(--color-text-muted)] leading-[1.8] max-w-[400px] mb-10 font-light">
             Crafted from nature's finest ingredients. No chemicals, no compromise — only pure, gentle care for your skin and hair.
@@ -121,7 +123,7 @@ export default function Hero() {
             <Link href="/shop" className="btn-primary">
               Explore Products
             </Link>
-            <Link href="#about" className="btn-ghost" style={{ fontSize: "0.82rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            <Link href="/about" className="btn-ghost" style={{ fontSize: "0.82rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Our Story &rarr;
             </Link>
           </motion.div>
@@ -167,23 +169,7 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* Mobile: Hero Video */}
-      <motion.div
-        className="absolute inset-0 md:hidden z-5 flex items-end justify-center pb-16"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-      >
-        <video
-          src="/videos/hero-loop.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-[85%] h-auto max-h-[40vh] object-contain rounded-2xl"
-        />
-      </motion.div>
+
 
       {/* Scroll indicator */}
       <motion.div 

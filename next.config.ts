@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.supabase.co',
       },
+      // Unsplash images
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
       // Allow localhost for development
       {
         protocol: 'http',

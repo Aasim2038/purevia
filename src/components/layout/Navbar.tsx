@@ -81,7 +81,7 @@ export default function Navbar() {
               <span className="absolute -top-3.5 -right-5 px-1.5 py-0.5 bg-[#FFF4E5] border border-[#D48806]/30 text-[#D48806] text-[0.55rem] rounded-full font-sans leading-none flex items-center justify-center">NEW</span>
             </Link>
           </li>
-          <li><Link href="/#about" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">About</Link></li>
+          <li><Link href="/about" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">About</Link></li>
           <li><Link href="/#ingredients" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">Ingredients</Link></li>
         </ul>
         <div className="flex items-center gap-4 md:gap-6 relative z-[101]">

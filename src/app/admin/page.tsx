@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { getShortOrderId } from "@/lib/orderId";
 import NotificationBell from "@/components/admin/NotificationBell";
 import { DollarSign, Package, TriangleAlert, Truck, TrendingUp, Users } from "lucide-react";
+import StatsCards from "@/components/admin/StatsCards";
 
 type DashboardStatus = "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
@@ -181,62 +182,7 @@ export default async function AdminDashboardPage() {
         </header>
 
         <div className="p-6 md:p-10 lg:p-12 w-full max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5 md:gap-6 mb-8">
-            <div className="bg-white rounded-2xl p-6 border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)]">
-              <div className="flex items-center gap-3 mb-4 text-[var(--color-text-muted)]">
-                <div className="w-9 h-9 rounded-full bg-[#FAF9F7] flex items-center justify-center">
-                  <DollarSign size={16} />
-                </div>
-                <span className="text-[0.75rem] uppercase tracking-[0.1em] font-medium">Total Revenue</span>
-              </div>
-              <div className="font-serif text-[2rem] md:text-[2.2rem] font-medium text-[var(--color-text)]">{formatCurrency(totalRevenue)}</div>
-              <div className="text-[0.75rem] text-[var(--color-sage-dark)] mt-2 font-medium">Today from completed shipments</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)]">
-              <div className="flex items-center gap-3 mb-4 text-[var(--color-text-muted)]">
-                <div className="w-9 h-9 rounded-full bg-[#FAF9F7] flex items-center justify-center">
-                  <Package size={16} />
-                </div>
-                <span className="text-[0.75rem] uppercase tracking-[0.1em] font-medium">Total Orders</span>
-              </div>
-              <div className="font-serif text-[2rem] md:text-[2.2rem] font-medium text-[var(--color-text)]">{todayOrdersCount.toLocaleString("en-IN")}</div>
-              <div className="text-[0.75rem] text-[var(--color-text-muted)] mt-2 font-medium">Orders placed today</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)]">
-              <div className="flex items-center gap-3 mb-4 text-[var(--color-text-muted)]">
-                <div className="w-9 h-9 rounded-full bg-[#FAF9F7] flex items-center justify-center">
-                  <Users size={16} />
-                </div>
-                <span className="text-[0.75rem] uppercase tracking-[0.1em] font-medium">Active Users</span>
-              </div>
-              <div className="font-serif text-[2rem] md:text-[2.2rem] font-medium text-[var(--color-text)]">{activeUsers.toLocaleString("en-IN")}</div>
-              <div className="text-[0.75rem] text-[var(--color-text-muted)] mt-2 font-medium">Registered customer base</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)]">
-              <div className="flex items-center gap-3 mb-4 text-[var(--color-text-muted)]">
-                <div className="w-9 h-9 rounded-full bg-[#FFF4E5] flex items-center justify-center text-[#D48806]">
-                  <Truck size={16} />
-                </div>
-                <span className="text-[0.75rem] uppercase tracking-[0.1em] font-medium">Pending Shipments</span>
-              </div>
-              <div className="font-serif text-[2rem] md:text-[2.2rem] font-medium text-[var(--color-text)]">{pendingShipments.toLocaleString("en-IN")}</div>
-              <div className="text-[0.75rem] text-[var(--color-text-muted)] mt-2 font-medium">Orders awaiting dispatch</div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)]">
-              <div className="flex items-center gap-3 mb-4 text-[var(--color-text-muted)]">
-                <div className="w-9 h-9 rounded-full bg-[#FCF3F3] flex items-center justify-center text-red-600">
-                  <TriangleAlert size={16} />
-                </div>
-                <span className="text-[0.75rem] uppercase tracking-[0.1em] font-medium">Low Stock Alert</span>
-              </div>
-              <div className="font-serif text-[2rem] md:text-[2.2rem] font-medium text-[var(--color-text)]">{lowStockCount.toLocaleString("en-IN")}</div>
-              <div className="text-[0.75rem] text-red-600/80 mt-2 font-medium">SKUs at 3 or below</div>
-            </div>
-          </div>
+          <StatsCards />
 
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-6 mb-8">
             <div className="xl:col-span-5 bg-white rounded-2xl border border-[#EAE6DF] shadow-[0_4px_20px_rgba(138,158,126,0.02)] overflow-hidden">

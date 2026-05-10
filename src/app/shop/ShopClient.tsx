@@ -3,7 +3,6 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/context/CartContext';
 import ProductCard, { ProductType } from '@/components/ui/ProductCard';
-import Footer from '@/components/sections/Footer';
 
 const categories = ["All", "Skin Care", "Hair Care", "Face Care" , "Body Care", "Curated Kits"];
 
@@ -183,8 +182,6 @@ export default function ShopClient({ initialProducts, initialCategory, initialTa
         </div>
 
       </main>
-
-      <Footer />
     </div>
   );
 }

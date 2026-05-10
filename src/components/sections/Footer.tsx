@@ -1,7 +1,11 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith('/admin')) return null;
   return (
     <footer className="bg-[#1A1610] text-[#F7F3ED] pt-16 md:pt-24 pb-8 px-6 md:px-16">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-[rgba(247,243,237,0.1)] pb-16">
@@ -23,10 +27,14 @@ export default function Footer() {
         <div>
           <div className="text-[0.8rem] tracking-[0.2em] uppercase text-[var(--color-sage)] mb-6">Navigate</div>
           <ul className="list-none p-0 m-0 flex flex-col gap-4">
-            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Home</Link></li>
-            <li><Link href="#products" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Shop</Link></li>
-            <li><Link href="#about" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">About Us</Link></li>
-            <li><Link href="#ingredients" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Ingredients</Link></li>
+            <li><Link href="/" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Home</Link></li>
+            <li><Link href="/shop" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Shop</Link></li>
+            <li><Link href="/about" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">About Us</Link></li>
+            <li><Link href="/#ingredients" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Ingredients</Link></li>
+            <li><Link href="/privacy-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
+            <li><Link href="/terms-of-service" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Terms of Service</Link></li>
+            <li><Link href="/refund-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Refund Policy</Link></li>
+            <li><Link href="/shipping-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Shipping Policy</Link></li>
           </ul>
         </div>
 
@@ -35,16 +43,17 @@ export default function Footer() {
           <div className="text-[0.8rem] tracking-[0.2em] uppercase text-[var(--color-sage)] mb-6">Connect</div>
           <ul className="list-none p-0 m-0 flex flex-col gap-4">
             <li><Link href="https://wa.me/918055197578" target="_blank" rel="noreferrer" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">WhatsApp</Link></li>
-            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Instagram</Link></li>
-            <li><Link href="#" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Contact Us</Link></li>
-            <li><Link href="/privacy-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
+            <li><Link href="https://www.instagram.com/pureable.in/" target="_blank" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Instagram</Link></li>
+            <li><Link href="https://www.facebook.com/profile.php?id=61589130072124" target="_blank" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Facebook</Link></li>
+            <li><Link href="https://in.pinterest.com/pureable/" target="_blank" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Pinterest</Link></li>
+            
           </ul>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[0.75rem] text-[rgba(247,243,237,0.5)] tracking-[0.05em] font-light">
         <span>© 2026 Pureable. All rights reserved.</span>
-        <span>Nagpur, Maharashtra · India</span>
+        <span>Aurangabad (Sambhajinagar), Maharashtra · India</span>
       </div>
     </footer>
   );

@@ -1,37 +1,43 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Terms of Service",
-};
+import React from 'react';
 
 export default function TermsOfServicePage() {
   return (
-    <main className="min-h-screen bg-[var(--color-cream)] pt-32 pb-24 px-6 md:px-16">
-      <section className="max-w-4xl mx-auto bg-white border border-[#EAE6DF] rounded-3xl p-8 md:p-12 shadow-[0_10px_30px_rgba(26,22,16,0.04)]">
-        <h1 className="font-serif text-4xl md:text-5xl font-light text-[var(--color-text)] mb-6">Terms of Service</h1>
-        <div className="space-y-5 text-[0.95rem] leading-[1.9] text-[var(--color-text-muted)]">
-          <p>
-            This is a placeholder Terms of Service page for Pureable. By using this site, customers agree to comply
-            with applicable laws and the terms outlined in this agreement.
-          </p>
-          <p>
-            Product availability, pricing, and offers may change without prior notice. Orders are subject to acceptance,
-            stock validation, and successful payment authorization.
-          </p>
-          <p>
-            Customers are responsible for providing accurate shipping details. Delays caused by incomplete or incorrect
-            information may affect delivery timelines.
-          </p>
-          <p>
-            All content, branding, and design elements on this website are protected intellectual property and may not
-            be copied or redistributed without written permission.
-          </p>
-          <p>
-            These terms are provided as draft placeholder content and should be reviewed by legal counsel prior to
-            production launch.
-          </p>
+    <main className="bg-[var(--color-cream)] text-[var(--color-text)] min-h-screen pt-32 pb-24 px-6 md:px-16">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="font-serif text-[3rem] md:text-[4rem] font-light mb-12 border-b border-[rgba(196,168,130,0.2)] pb-8">
+          Terms of <span className="italic">Service</span>
+        </h1>
+        
+        <div className="space-y-10 text-[1.1rem] text-[var(--color-text-muted)] leading-relaxed font-light">
+          <section>
+            <h2 className="text-[var(--color-text)] font-serif text-[1.8rem] mb-4">1. Acceptance of Terms</h2>
+            <p>
+              By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. Any participation in this service will constitute acceptance of this agreement.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-[var(--color-text)] font-serif text-[1.8rem] mb-4">2. Product Information</h2>
+            <p>
+              The products listed on Pureable are subject to change without notice. We attempt to be as accurate as possible in the description of our chemical-free, Ayurvedic products; however, we do not warrant that product descriptions or other content are error-free.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-[var(--color-text)] font-serif text-[1.8rem] mb-4">3. User Conduct</h2>
+            <p>
+              Users are prohibited from using the site to engage in any conduct that would violate any local, state, national or international law. You agree not to reproduce, duplicate, copy, sell, resell or exploit any portion of the service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-[var(--color-text)] font-serif text-[1.8rem] mb-4">4. Limitation of Liability</h2>
+            <p>
+              Pureable and its technical backers ATASS Solutions shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the service.
+            </p>
+          </section>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
