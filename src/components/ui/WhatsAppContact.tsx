@@ -8,7 +8,7 @@ export default function WhatsAppContact() {
       href="https://wa.me/918055197578" 
       target="_blank" 
       rel="noreferrer"
-      className="fixed bottom-8 right-8 z-[99] w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,211,102,0.3)] hover:scale-110 hover:shadow-[0_12px_30px_rgba(37,211,102,0.4)] transition-all duration-300 group"
+      className="fixed bottom-[110px] right-6 md:bottom-8 md:right-8 z-[999] w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(37,211,102,0.3)] hover:scale-110 hover:shadow-[0_12px_30px_rgba(37,211,102,0.4)] transition-all duration-300 group"
       aria-label="Contact us on WhatsApp"
     >
       {/* WhatsApp Icon */}

@@ -156,13 +156,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Premium Curated Kits Pill for Mobile */}
-      <div className="md:hidden fixed bottom-[90px] left-1/2 -translate-x-1/2 z-[100]">
-        <Link href="/shop?category=Curated%20Kits" className="flex items-center gap-2 bg-gradient-to-r from-[#FFF4E5] to-[#FDE6C8] border border-[#D48806]/30 shadow-[0_4px_15px_rgba(212,136,6,0.15)] px-6 py-2.5 rounded-full no-underline transition-transform active:scale-95">
-          <span className="text-[1.1rem]">🎁</span>
-          <span className="text-[0.75rem] font-medium uppercase tracking-[0.1em] text-[#B37305] whitespace-nowrap">Explore Curated Kits</span>
-        </Link>
-      </div>
 
       {/* Mobile Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-[400px] bg-[rgba(247,243,237,0.85)] backdrop-blur-[16px] border border-[rgba(196,168,130,0.2)] rounded-full px-8 py-3.5 flex justify-between items-center z-[100] shadow-[0_8px_32px_rgba(92,115,82,0.12)]">
