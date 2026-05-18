@@ -120,7 +120,7 @@ export default function Navbar() {
                         >
                           <div className="w-10 h-10 rounded-md overflow-hidden bg-[var(--color-cream)] border border-[rgba(138,158,126,0.1)] shrink-0 flex items-center justify-center text-[0.6rem] text-[var(--color-sage)] relative">
                              {product.images && product.images[0] ? (
-                               <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                               <img src={product.images[0]} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                              ) : "IMG"}
                           </div>
                           <div className="flex flex-col flex-1 min-w-0">

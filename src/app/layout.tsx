@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
-import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/layout/Navbar";
 import CartDrawer from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/context/CartContext";
 import AuthProvider from "@/components/providers/AuthProvider";
-
+import ClientProviders from "@/components/providers/ClientProviders";
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
@@ -99,10 +98,11 @@ export default function RootLayout({
       <body className={`${dmSans.variable} ${cormorant.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
-            <CustomCursor />
             <Navbar />
             <CartDrawer />
-            {children}
+            <ClientProviders>
+              {children}
+            </ClientProviders>
             <Footer />
             <WhatsAppContact />
           </CartProvider>
