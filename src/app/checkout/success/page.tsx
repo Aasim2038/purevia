@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
+import { getShortOrderId } from '@/lib/orderId';
 
 // Is function ko alag kar diya taaki Suspense use kar sakein
 function SuccessContent() {
@@ -14,10 +15,10 @@ function SuccessContent() {
   useEffect(() => {
     const fromQuery = searchParams.get('orderId');
     if (fromQuery) {
-      setOrderId(fromQuery);
+      setOrderId(getShortOrderId(fromQuery));
     } else {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      setOrderId(`PUR-${randomNum}`);
+      setOrderId(`#PB-${randomNum}`);
     }
   }, [searchParams]);
 
@@ -46,7 +47,7 @@ function SuccessContent() {
           Thank you for choosing <br/><em className="italic text-[var(--color-sage-dark)]">Pureable</em>
         </h1>
         <p className="text-[1rem] text-[var(--color-text-muted)] font-light leading-[1.6] mb-8 max-w-[400px] mx-auto">
-          Your order <strong className="font-medium text-[var(--color-text)]">#{orderId}</strong> has been placed successfully. We will contact you shortly for confirmation.
+          Your order <strong className="font-medium text-[var(--color-text)]">{orderId}</strong> has been placed successfully. We will contact you shortly for confirmation.
         </p>
       </motion.div>
 

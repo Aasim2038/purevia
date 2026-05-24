@@ -130,7 +130,7 @@ export default function AdminOrdersPage() {
               <div className="relative w-full lg:max-w-[360px]">
                 <input
                   type="text"
-                  placeholder="Search by Name, Phone, or #PV-XXXX"
+                  placeholder="Search by Name, Phone, or #PB-XXXX"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-white border border-[#EAE6DF] rounded-xl px-4 py-2.5 text-[0.88rem] outline-none focus:border-[var(--color-sage-dark)]"

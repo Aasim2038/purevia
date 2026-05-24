@@ -61,43 +61,88 @@ export async function POST(req: Request) {
     const user = await getSessionUser();
     const body = await req.json().catch(() => ({}));
     
-    // 1. Extract with safe fallbacks to prevent crashes
-    const firstName = String(body.firstName || "").trim();
-    const lastName = String(body.lastName || "").trim();
-    const email = (body.email && String(body.email).trim() !== "") ? String(body.email).trim() : null;
-    const phone = String(body.phone || "").trim();
-    const address = String(body.address || "").trim();
-    const city = String(body.city || "").trim();
-    const pin = String(body.pin || "").trim();
-    const paymentMethod = String(body.paymentMethod || "cod").trim();
-    const items = Array.isArray(body.items) ? body.items : [];
+    console.log("INCOMING PAYLOAD:", body);
+
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      city,
+      pin,
+      userId: incomingUserIdRaw,
+      paymentMethod,
+      razorpayPaymentId,
+      razorpayOrderId,
+      lat,
+      lng,
+      shippingAmount,
+      grandTotal,
+      items
+    } = body;
+    
+    // 1. Extract exactly the flat fields with safe fallbacks
+    const safeFirstName = String(firstName || "").trim();
+    const safeLastName = String(lastName || "").trim();
+    const safeEmail = (email && String(email).trim() !== "") ? String(email).trim() : null;
+    const incomingUserId = incomingUserIdRaw ? String(incomingUserIdRaw).trim() : null;
+    const finalUserId = user?.id || incomingUserId;
+    const safePhone = String(phone || "").trim();
+    const safeAddress = String(address || "").trim();
+    const safeCity = String(city || "").trim();
+    const safePin = String(pin || "").trim();
+    const safePaymentMethod = String(paymentMethod || "cod").trim();
+    const orderItems: IncomingOrderItem[] = Array.isArray(items) ? items : [];
     
     // 2. Handle numeric/location fields safely
-    const lat = (typeof body.lat === "number" && !isNaN(body.lat)) ? body.lat : null;
-    const lng = (typeof body.lng === "number" && !isNaN(body.lng)) ? body.lng : null;
-    const shippingAmount = Number(body.shippingAmount) || 0;
-    const grandTotal = Number(body.grandTotal) || 0;
+    const safeLat = (typeof lat === "number" && !isNaN(lat)) ? lat : null;
+    const safeLng = (typeof lng === "number" && !isNaN(lng)) ? lng : null;
+    const safeShippingAmount = Number(shippingAmount) || 0;
+    const safeGrandTotal = Number(grandTotal) || 0;
     
     // 3. Razorpay fields
-    const razorpayOrderId = body.razorpayOrderId ? String(body.razorpayOrderId).trim() : null;
-    const razorpayPaymentId = body.razorpayPaymentId ? String(body.razorpayPaymentId).trim() : null;
+    const safeRazorpayOrderId = razorpayOrderId ? String(razorpayOrderId).trim() : null;
+    const safeRazorpayPaymentId = razorpayPaymentId ? String(razorpayPaymentId).trim() : null;
 
-    const orderItems: IncomingOrderItem[] = items;
-    if (!firstName || !phone || !address || !city || !pin || orderItems.length === 0) {
-      return NextResponse.json({ error: "Missing required checkout data" }, { status: 400 });
+    const missingFields = [];
+    if (!safeFirstName) missingFields.push("firstName");
+    if (!safeEmail) missingFields.push("email");
+    if (!finalUserId) missingFields.push("userId");
+    if (!safePhone) missingFields.push("phone");
+    if (!safeAddress) missingFields.push("address");
+    if (!safeCity) missingFields.push("city");
+    if (!safePin) missingFields.push("pin");
+    if (orderItems.length === 0) missingFields.push("items");
+
+    if (missingFields.length > 0) {
+      const errorMsg = `Missing required checkout data: ${missingFields.join(", ")}`;
+      console.error("VALIDATION FAILED:", errorMsg);
+      return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
-    const productIds = orderItems.map((item) => item.productId).filter(Boolean);
+    const sanitizedOrderItems = orderItems.map((item) => {
+      const pId = String(item.productId || "");
+      const cleanProductId = pId.includes('-') && pId.split('-').length > 5 ? pId.split('-').slice(0, 5).join('-') : pId;
+      return { ...item, cleanProductId };
+    });
+
+    const productIds = sanitizedOrderItems.map((item) => item.cleanProductId).filter(Boolean);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, name: true, price: true, stock: true },
     });
     const productMap = new Map(dbProducts.map((product) => [product.id, product]));
 
-    const normalizedItems = orderItems
+    const missingProduct = sanitizedOrderItems.find((item) => !productMap.has(item.cleanProductId));
+    if (missingProduct) {
+      console.error("VALIDATION FAILED: Product not found in database", missingProduct);
+      return NextResponse.json({ error: `Product not found in database: ${missingProduct.cleanProductId}` }, { status: 400 });
+    }
+
+    const normalizedItems = sanitizedOrderItems
       .map((item) => {
-        const product = productMap.get(item.productId);
-        if (!product) return null;
+        const product = productMap.get(item.cleanProductId)!;
         const quantity = Math.max(1, Number(item.quantity) || 1);
         const unitPrice = Number(product.price) || 0;
         if (quantity > product.stock) {
@@ -118,12 +163,7 @@ export async function POST(req: Request) {
           lineTotal: unitPrice * quantity,
           insufficientStock: false as const,
         };
-      })
-      .filter((item): item is NonNullable<typeof item> => Boolean(item));
-
-    if (normalizedItems.length === 0) {
-      return NextResponse.json({ error: "No valid products in order" }, { status: 400 });
-    }
+      });
 
     const outOfStockItem = normalizedItems.find((item) => item.insufficientStock);
     if (outOfStockItem) {
@@ -134,9 +174,9 @@ export async function POST(req: Request) {
     }
 
     const subtotalAmount = normalizedItems.reduce((sum, item) => sum + item.lineTotal, 0);
-    const safeShippingAmount = Number(shippingAmount) > 0 ? Number(shippingAmount) : 0;
-    const safeGrandTotal = Number(grandTotal) > 0 ? Number(grandTotal) : subtotalAmount + safeShippingAmount;
-    const customerName = `${String(firstName).trim()} ${String(lastName || "").trim()}`.trim();
+    const validShippingAmount = safeShippingAmount > 0 ? safeShippingAmount : 0;
+    const validGrandTotal = safeGrandTotal > 0 ? safeGrandTotal : subtotalAmount + validShippingAmount;
+    const customerName = `${safeFirstName} ${safeLastName}`.trim();
 
     const cleanItems = normalizedItems.map(({ insufficientStock, ...item }) => item);
 
@@ -153,20 +193,20 @@ export async function POST(req: Request) {
 
       return tx.order.create({
         data: {
-          userId: user?.id ?? null,
+          userId: finalUserId!,
           customerName: customerName || "Customer",
-          customerEmail: email,
-          customerPhone: phone || "0000000000",
-          shippingAddress: address || "Address not provided",
-          shippingCity: city || "City",
-          shippingPinCode: pin || "000000",
-          paymentMethod: paymentMethod,
-          totalAmount: safeGrandTotal,
-          lat: lat,
-          lng: lng,
-          razorpayOrderId: razorpayOrderId,
-          razorpayPaymentId: razorpayPaymentId,
-          paymentStatus: razorpayPaymentId ? 'PAID' : 'PENDING',
+          customerEmail: safeEmail!,
+          customerPhone: safePhone || "0000000000",
+          shippingAddress: safeAddress || "Address not provided",
+          shippingCity: safeCity || "City",
+          shippingPinCode: safePin || "000000",
+          paymentMethod: safePaymentMethod,
+          totalAmount: validGrandTotal,
+          lat: safeLat ?? undefined,
+          lng: safeLng ?? undefined,
+          razorpayOrderId: safeRazorpayOrderId || undefined,
+          razorpayPaymentId: safeRazorpayPaymentId || undefined,
+          paymentStatus: safeRazorpayPaymentId ? 'PAID' : 'PENDING',
           orderItems: {
             create: cleanItems,
           },
@@ -185,12 +225,12 @@ export async function POST(req: Request) {
       .filter((product) => product.stock <= 3)
       .map((product) => ({ name: product.name, stock: product.stock }));
 
-    if (email && String(email).trim()) {
+    if (safeEmail) {
       sendCustomerOrderConfirmation({
-        to: String(email).trim(),
+        to: safeEmail,
         customerName,
         orderId: order.id,
-        totalAmount: safeGrandTotal,
+        totalAmount: validGrandTotal,
         items: cleanItems,
       }).catch((emailError) => {
         console.error("Customer confirmation email failed:", emailError);
@@ -200,8 +240,8 @@ export async function POST(req: Request) {
     sendAdminNewOrderAlert({
       orderId: order.id,
       customerName,
-      customerEmail: email ? String(email).trim() : null,
-      totalAmount: safeGrandTotal,
+      customerEmail: safeEmail,
+      totalAmount: validGrandTotal,
       items: cleanItems,
       lowStockWarnings,
     }).catch((emailError) => {

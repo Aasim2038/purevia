@@ -115,6 +115,7 @@ export default function CheckoutPage() {
 
   const isFormValid = items.length > 0 &&
     formData.firstName.trim() !== '' &&
+    formData.email.trim() !== '' &&
     formData.phone.trim() !== '' &&
     formData.address.trim() !== '' &&
     formData.city.trim() !== '' &&
@@ -146,8 +147,14 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          email: formData.email.trim() === '' ? null : formData.email.trim(),
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim() || null,
+          phone: formData.phone.trim(),
+          address: formData.address.trim(),
+          city: formData.city.trim(),
+          pin: formData.pin.trim(),
+          userId: session?.user?.id || null,
           paymentMethod,
           razorpayPaymentId: razorpayPaymentId || null,
           razorpayOrderId: razorpayOrderId || null,
