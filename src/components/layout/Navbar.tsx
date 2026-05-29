@@ -82,6 +82,7 @@ export default function Navbar() {
             </Link>
           </li>
           <li><Link href="/about" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">About</Link></li>
+          <li><Link href="/blog" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">Journal</Link></li>
           <li><Link href="/#ingredients" className="text-[0.82rem] tracking-[0.15em] uppercase text-[var(--color-text-muted)] no-underline transition-colors duration-300 hover:text-[var(--color-sage-dark)]">Ingredients</Link></li>
         </ul>
         <div className="flex items-center gap-4 md:gap-6 relative z-[101]">

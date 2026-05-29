@@ -30,6 +30,7 @@ export default function Footer() {
             <li><Link href="/" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Home</Link></li>
             <li><Link href="/shop" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Shop</Link></li>
             <li><Link href="/about" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">About Us</Link></li>
+            <li><Link href="/blog" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Journal</Link></li>
             <li><Link href="/#ingredients" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Ingredients</Link></li>
             <li><Link href="/privacy-policy" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Privacy Policy</Link></li>
             <li><Link href="/terms-of-service" className="text-[0.95rem] text-[rgba(247,243,237,0.7)] font-light hover:text-white transition-colors duration-300">Terms of Service</Link></li>
