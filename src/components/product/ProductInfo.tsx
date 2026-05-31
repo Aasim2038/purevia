@@ -11,9 +11,9 @@ type ProductInfoProps = {
     description: string;
     category: string;
     stock: number;
-    ingredients?: string;
-    howToUse?: string;
-    images?: string[];
+    ingredients?: string | null;
+    howToUse?: string | null;
+    images?: string[] | null;
     minOrderQty?: number;
     isKit?: boolean;
     packs?: any;

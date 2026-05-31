@@ -114,7 +114,7 @@ export default function Navbar() {
                     <div className="flex flex-col">
                       {searchResults.map((product) => (
                         <Link 
-                          href={`/product/${product.id}`} 
+                          href={`/product/${product.slug || product.id}`} 
                           key={product.id}
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-[rgba(138,158,126,0.05)] transition-colors border-b border-[rgba(138,158,126,0.05)] last:border-0"
                           onClick={() => { setShowResults(false); setDesktopSearch(""); }}

@@ -66,6 +66,7 @@ async function mapProductsWithTags(dbProducts: any[], bestSellerIds: Set<string>
     const tag = getProductTag({ createdAt: p.createdAt, stock: p.stock });
     return {
       id: p.id,
+      slug: p.slug,
       name: p.name,
       desc: p.description || "",
       price: p.price,

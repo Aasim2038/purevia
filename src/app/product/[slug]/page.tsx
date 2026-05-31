@@ -9,14 +9,14 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import { ProductRailSkeleton } from "@/components/ui/LoadingSkeleton";
 
 type ProductPageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export const revalidate = 60;
 
-async function getProductById(id: string) {
-  return (prisma as any).product.findUnique({
-    where: { id },
+async function getProductBySlug(slug: string) {
+  return prisma.product.findUnique({
+    where: { slug },
     include: {
       reviews: {
         orderBy: { createdAt: "desc" },
@@ -30,20 +30,9 @@ async function getProductById(id: string) {
   });
 }
 
-async function getRelatedProducts(category: string, currentProductId: string) {
-  return (prisma as any).product.findMany({
-    where: {
-      category,
-      id: { not: currentProductId },
-    },
-    take: 4,
-  });
-}
-
-
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const { id } = await params;
-  const product = await getProductById(id);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -53,7 +42,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const title = `${product.name} | Pureable`;
   const description = product.description || `Buy ${product.name} - premium chemical-free Ayurvedic skincare at Pureable.`;
-  const url = `https://pureable.in/product/${id}`;
+  const url = `https://pureable.in/product/${slug}`;
   const imageUrl = product.images && product.images[0] ? product.images[0] : "https://pureable.in/og-image.jpg";
 
   return {
@@ -86,12 +75,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
-async function ProductContent({ id }: { id: string }) {
-  // Fetch product and related products in parallel
-  const [product, relatedProducts] = await Promise.all([
-    getProductById(id),
-    getRelatedProducts("", id), // Will be filtered in RelatedProducts component
-  ]);
+async function ProductContent({ slug }: { slug: string }) {
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
@@ -126,12 +111,12 @@ async function ProductContent({ id }: { id: string }) {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params;
+  const { slug } = await params;
 
   return (
     <main className="bg-[var(--color-cream)] pt-24 md:pt-32 pb-0 min-h-screen">
       <Suspense fallback={<ProductRailSkeleton />}>
-        <ProductContent id={id} />
+        <ProductContent slug={slug} />
       </Suspense>
     </main>
   );

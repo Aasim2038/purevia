@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext';
 
 export interface ProductType {
   id?: string;
+  slug?: string | null;
   name: string;
   desc: string;
   price: number | string;
@@ -71,12 +72,12 @@ export default function ProductCard({ product, variants, layout, priority }: Pro
       transition={variants ? undefined : { duration: 0.4, type: "spring", bounce: 0.25 }}
       className="group relative rounded-[20px] overflow-hidden bg-[var(--color-white)] border border-[rgba(196,168,130,0.15)] transition-all duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(92,115,82,0.12)] cursor-pointer flex flex-col h-full"
     >
-      <Link href={`/product/${product.id || '123'}`} className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>
+      <Link href={`/product/${product.slug || product.id || '123'}`} className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>
       
       <div className="aspect-square sm:aspect-auto sm:h-[280px] relative overflow-hidden flex items-center justify-center shrink-0 bg-[var(--color-cream)]">
         <div className="absolute inset-0 z-0 opacity-80 mix-blend-multiply" style={{ background: product.bg }} />
         {thumbnail ? (
-          <Image src={thumbnail} alt={product.name} fill priority={priority} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+          <Image src={thumbnail} alt={`${product.name} - Organic Ayurvedic Skincare | Pureable`} fill priority={priority} className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
         ) : (
           <div className="text-[5rem] relative z-[1] drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-400 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110 group-hover:-translate-y-1">
             {product.icon}

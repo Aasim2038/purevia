@@ -37,14 +37,14 @@ export default async function RelatedProducts({ category, currentProductId }: Re
                 key={product.id}
                 className="w-[42vw] min-w-[160px] sm:w-[260px] md:w-[300px] sm:min-w-[260px] md:min-w-[300px] max-w-[320px] snap-start flex-shrink-0 touch-pan-y group relative bg-[#FDFAF6] rounded-[20px] p-4 sm:p-6 border border-[rgba(196,168,130,0.15)] transition-all duration-400 hover:-translate-y-3 hover:shadow-[0_20px_40px_rgba(138,158,126,0.08)] flex flex-col items-center text-center cursor-pointer overflow-hidden"
               >
-                <Link href={`/product/${product.id}`} className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>
+                <Link href={`/product/${product.slug || product.id}`} className="absolute inset-0 z-20" aria-label={`View ${product.name}`}></Link>
                 
                 <div 
                   className="w-full aspect-square rounded-[12px] mb-4 sm:mb-6 relative overflow-hidden transition-transform duration-500 group-hover:scale-[1.03]"
                   style={{ background: 'linear-gradient(135deg, #F7F3ED 0%, #EEE7DB 100%)' }}
                 >
                   {product.images?.[0] ? (
-                    <Image src={product.images[0]} alt={product.name} fill className="w-full h-full object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                    <Image src={product.images[0]} alt={`${product.name} - Organic Ayurvedic Skincare | Pureable`} fill className="w-full h-full object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                   ) : null}
                   {/* Quick View Overlay */}
                   <div className="absolute inset-0 bg-[rgba(247,243,237,0.7)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">

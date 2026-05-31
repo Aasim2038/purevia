@@ -29,6 +29,7 @@ type ProfileOrder = {
     product: {
       images: string[];
       packs?: any;
+      slug?: string | null;
     } | null;
   }>;
 };
@@ -430,7 +431,7 @@ function ProfileContent() {
                             const formattedVariant = variantLabel ? formatVariantLabel(variantLabel) : "";
                             const fullName = formattedVariant ? `${baseName} (${formattedVariant})` : baseName;
                             return (
-                              <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)] truncate block">
+                              <Link href={`/product/${item.product?.slug || item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)] truncate block">
                                 {fullName}
                               </Link>
                             );

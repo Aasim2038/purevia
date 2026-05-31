@@ -37,6 +37,7 @@ type AdminOrder = {
     product: {
       images: string[];
       packs?: any;
+      slug?: string | null;
     } | null;
   }>;
 };
@@ -302,7 +303,7 @@ export default function AdminOrdersPage() {
                             const formattedVariant = variantLabel ? formatVariantLabel(variantLabel) : "";
                             const fullName = formattedVariant ? `${baseName} (${formattedVariant})` : baseName;
                             return (
-                              <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)]">
+                              <Link href={`/product/${item.product?.slug || item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)]">
                                 {fullName}
                               </Link>
                             );

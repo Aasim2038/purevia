@@ -70,7 +70,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
               ) : (
                 <Image
                   src={activeMedia.src}
-                  alt={`${product.name} ${activeIdx + 1}`}
+                  alt={`${product.name} - Organic Ayurvedic Skincare | Pureable`}
                   fill
                   priority
                   className="absolute inset-0 w-full h-full object-cover"
@@ -99,7 +99,7 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
             onClick={() => moveToIndex(idx)}
             className={`relative w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-[12px] overflow-hidden transition-all duration-300 border-2 ${activeMedia?.type === 'image' && activeIdx === idx ? 'border-[var(--color-sage)] scale-105 shadow-[0_4px_15px_rgba(138,158,126,0.15)]' : 'border-transparent opacity-50 hover:opacity-100 hover:scale-105'}`}
           >
-            <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="absolute inset-0 w-full h-full object-cover" />
+            <Image src={img} alt={`${product.name} - Organic Ayurvedic Skincare | Pureable`} fill className="absolute inset-0 w-full h-full object-cover" />
           </button>
         ))}
         {hasVideo && (

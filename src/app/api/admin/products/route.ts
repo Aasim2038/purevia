@@ -11,6 +11,18 @@ const extractPathFromUrl = (url: string, bucket: string) => {
   }
 };
 
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
 export async function GET() {
   try {
     const products = await prisma.product.findMany({
@@ -40,9 +52,20 @@ export async function POST(req: Request) {
       ? (typeof kitItems === 'string' ? JSON.parse(kitItems) : kitItems)
       : [];
 
+    const baseSlug = slugify(name);
+    let slug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = await prisma.product.findUnique({ where: { slug } });
+      if (!existing) break;
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
     const product = await prisma.product.create({
       data: {
         name,
+        slug,
         price: Number(price),
         category,
         stock: Number(stock),
@@ -101,6 +124,21 @@ export async function PATCH(req: Request) {
       ? (typeof kitItems === 'string' ? JSON.parse(kitItems) : kitItems)
       : undefined;
 
+    let slug: string | undefined;
+    if (name) {
+      const baseSlug = slugify(name);
+      slug = baseSlug;
+      let counter = 1;
+      while (true) {
+        const existing = await prisma.product.findFirst({
+          where: { slug, NOT: { id } }
+        });
+        if (!existing) break;
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -117,6 +155,7 @@ export async function PATCH(req: Request) {
         minOrderQty: Number(minOrderQty) || 1,
         images: imageUrls || [],
         videoUrl,
+        ...(slug && { slug }),
         ...(packsValue !== undefined && { packs: packsValue }),
         ...(kitItemsValue !== undefined && { kitItems: kitItemsValue }),
       },

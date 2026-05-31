@@ -47,6 +47,7 @@ async function ShopProductsStream({ category, tag }: { category?: string; tag?: 
     
     return {
       id: p.id,
+      slug: p.slug,
       name: p.name,
       desc: p.description || '',
       price: p.price,

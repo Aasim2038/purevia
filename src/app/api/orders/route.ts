@@ -45,6 +45,7 @@ export async function GET() {
               select: {
                 images: true,
                 packs: true,
+                slug: true,
               },
             },
           },
