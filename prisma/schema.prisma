@@ -116,8 +116,9 @@ model OrderItem {
   productId   String
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productName String
-  unitPrice   Float
-  quantity    Int      @default(1)
+  unitPrice       Float
+  priceAtPurchase Float    @default(0)
+  quantity        Int      @default(1)
   lineTotal   Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

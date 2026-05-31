@@ -29,11 +29,14 @@ type AdminOrder = {
     id: string;
     productId: string;
     productName: string;
+    variantLabel?: string | null;
     quantity: number;
     unitPrice: number;
+    priceAtPurchase: number;
     lineTotal: number;
     product: {
       images: string[];
+      packs?: any;
     } | null;
   }>;
 };
@@ -52,6 +55,15 @@ const statusClassMap: Record<OrderStatus, string> = {
   CANCELLED: "bg-[#FCF3F3] text-red-600",
 };
 
+function formatVariantLabel(label: string): string {
+  if (!label) return "";
+  const cleaned = label.trim();
+  if (cleaned.toLowerCase().startsWith("packs of")) {
+    return "Pack of " + cleaned.slice(8).trim();
+  }
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +74,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/orders");
+      const res = await fetch(`/api/admin/orders?t=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to fetch orders");
       setOrders(data);
@@ -277,9 +289,28 @@ export default function AdminOrdersPage() {
                         <div className="w-11 h-11 rounded-lg overflow-hidden border border-[#EAE6DF] bg-[linear-gradient(135deg,#E8F5E0_0%,#D4E5CB_100%)] relative">
                           {item.product?.images?.[0] ? <Image src={item.product.images[0]} alt={item.productName} fill className="w-full h-full object-cover" /> : null}
                         </div>
-                        <div>
-                          <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)]">{item.productName}</Link>
-                          <div className="text-[0.78rem] text-[var(--color-text-muted)]">Qty: {item.quantity} x ₹{item.unitPrice}</div>
+                        <div className="min-w-0">
+                          {(() => {
+                            let [baseName, variantLabel] = item.productName.split(" - ");
+                            if (!variantLabel && item.product?.packs) {
+                              const packs = Array.isArray(item.product.packs) ? item.product.packs : [];
+                              const matchedPack = packs.find((p: any) => Number(p.price) === Number(item.priceAtPurchase || item.unitPrice));
+                              if (matchedPack && matchedPack.label) {
+                                variantLabel = matchedPack.label;
+                              }
+                            }
+                            const formattedVariant = variantLabel ? formatVariantLabel(variantLabel) : "";
+                            const fullName = formattedVariant ? `${baseName} (${formattedVariant})` : baseName;
+                            return (
+                              <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)]">
+                                {fullName}
+                              </Link>
+                            );
+                          })()}
+                          <div className="text-[0.78rem] text-[var(--color-text-muted)]">
+                            {/* @ts-ignore */}
+                            Qty: {item.quantity} x ₹{Math.round((item.subtotal || item.lineTotal || 382) / item.quantity)}
+                          </div>
                         </div>
                       </div>
                       <div className="font-serif text-[1rem] text-[var(--color-earth)]">₹{item.lineTotal}</div>

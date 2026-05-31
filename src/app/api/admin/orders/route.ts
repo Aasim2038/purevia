@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
@@ -14,10 +16,12 @@ export async function GET() {
             productName: true,
             quantity: true,
             unitPrice: true,
+            priceAtPurchase: true,
             lineTotal: true,
             product: {
               select: {
                 images: true,
+                packs: true,
               },
             },
           },

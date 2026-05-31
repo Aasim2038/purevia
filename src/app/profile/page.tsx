@@ -24,12 +24,23 @@ type ProfileOrder = {
     productName: string;
     quantity: number;
     unitPrice: number;
+    priceAtPurchase?: number;
     lineTotal: number;
     product: {
       images: string[];
+      packs?: any;
     } | null;
   }>;
 };
+
+function formatVariantLabel(label: string): string {
+  if (!label) return "";
+  const cleaned = label.trim();
+  if (cleaned.toLowerCase().startsWith("packs of")) {
+    return "Pack of " + cleaned.slice(8).trim();
+  }
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
 
 // Main content component that uses dynamic hooks like useSearchParams()
 function ProfileContent() {
@@ -92,7 +103,7 @@ function ProfileContent() {
     const loadOrders = async () => {
       setOrdersLoading(true);
       try {
-        const res = await fetch("/api/orders");
+        const res = await fetch(`/api/orders?t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (res.ok && Array.isArray(data.orders)) {
           setOrders(data.orders);
@@ -407,10 +418,24 @@ function ProfileContent() {
                           {item.product?.images?.[0] ? <Image src={item.product.images[0]} alt={item.productName} fill className="w-full h-full object-cover" /> : null}
                         </div>
                         <div className="min-w-0">
-                          <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)] truncate block">
-                            {item.productName}
-                          </Link>
-                          <div className="text-[12px] text-[var(--color-text-muted)]">Qty {item.quantity} x ₹{item.unitPrice}</div>
+                          {(() => {
+                            let [baseName, variantLabel] = item.productName.split(" - ");
+                            if (!variantLabel && item.product?.packs) {
+                              const packs = Array.isArray(item.product.packs) ? item.product.packs : [];
+                              const matchedPack = packs.find((p: any) => Number(p.price) === Number(item.priceAtPurchase || item.unitPrice));
+                              if (matchedPack && matchedPack.label) {
+                                variantLabel = matchedPack.label;
+                              }
+                            }
+                            const formattedVariant = variantLabel ? formatVariantLabel(variantLabel) : "";
+                            const fullName = formattedVariant ? `${baseName} (${formattedVariant})` : baseName;
+                            return (
+                              <Link href={`/product/${item.productId}`} className="font-medium text-[var(--color-text)] hover:text-[var(--color-sage-dark)] truncate block">
+                                {fullName}
+                              </Link>
+                            );
+                          })()}
+                          <div className="text-[12px] text-[var(--color-text-muted)]">Qty {item.quantity} x ₹{Math.round(item.lineTotal / item.quantity)}</div>
                         </div>
                       </div>
                       <div className="font-serif text-[1.02rem] text-[var(--color-earth)]">₹{item.lineTotal}</div>

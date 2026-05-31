@@ -7,6 +7,7 @@ import { sendAdminNewOrderAlert, sendCustomerOrderConfirmation } from "@/lib/ema
 type IncomingOrderItem = {
   productId: string;
   quantity: number;
+  price?: number;
 };
 
 async function getSessionUser() {
@@ -38,10 +39,12 @@ export async function GET() {
             productName: true,
             quantity: true,
             unitPrice: true,
+            priceAtPurchase: true,
             lineTotal: true,
             product: {
               select: {
                 images: true,
+                packs: true,
               },
             },
           },
@@ -130,7 +133,7 @@ export async function POST(req: Request) {
     const productIds = sanitizedOrderItems.map((item) => item.cleanProductId).filter(Boolean);
     const dbProducts = await prisma.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, name: true, price: true, stock: true },
+      select: { id: true, name: true, price: true, stock: true, packs: true },
     });
     const productMap = new Map(dbProducts.map((product) => [product.id, product]));
 
@@ -145,22 +148,38 @@ export async function POST(req: Request) {
         const product = productMap.get(item.cleanProductId)!;
         const quantity = Math.max(1, Number(item.quantity) || 1);
         const unitPrice = Number(product.price) || 0;
+        const priceAtPurchase = typeof item.price === "number" ? item.price : unitPrice;
+
+        // Resolve product name with pack/variant information
+        let finalProductName = product.name;
+        const pId = String(item.productId || "");
+        const parts = pId.split('-');
+        const packIndex = parts.length > 5 ? parseInt(parts[5], 10) : null;
+        if (packIndex !== null && !isNaN(packIndex) && Array.isArray(product.packs)) {
+          const pack = product.packs[packIndex] as any;
+          if (pack && pack.label) {
+            finalProductName = `${product.name} - ${pack.label}`;
+          }
+        }
+
         if (quantity > product.stock) {
           return {
             productId: product.id,
-            productName: product.name,
+            productName: finalProductName,
             unitPrice,
+            priceAtPurchase,
             quantity,
-            lineTotal: unitPrice * quantity,
+            lineTotal: priceAtPurchase * quantity,
             insufficientStock: true as const,
           };
         }
         return {
           productId: product.id,
-          productName: product.name,
+          productName: finalProductName,
           unitPrice,
+          priceAtPurchase,
           quantity,
-          lineTotal: unitPrice * quantity,
+          lineTotal: priceAtPurchase * quantity,
           insufficientStock: false as const,
         };
       });
