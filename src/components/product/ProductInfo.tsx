@@ -57,13 +57,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       id: 'shipping' as const,
       title: 'Shipping & Returns',
       content:
-        'Orders dispatch within 24-48 hours. Standard delivery takes 3-7 business days. Returns are accepted within 7 days for unopened products.',
+        'Orders dispatch within 24-48 hours. Standard delivery takes 3-7 business days. Due to hygiene reasons, we do not accept returns. However, if you receive a damaged or incorrect item, please notify us within 24 hours of delivery with photographic evidence for a free replacement.',
     },
   ];
 
   const handleAdd = () => {
     if (isOutOfStock) return;
-    
+
     let itemName = product.name;
     let itemPrice = product.price;
     let safeQty = Math.min(Math.max(1, qty), maxAllowedQty);
@@ -73,7 +73,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       itemName = `${product.name} - ${pack.label}`;
       itemPrice = pack.price;
       // When buying a pack, we treat it as 1 unit of that pack in the cart
-      safeQty = 1; 
+      safeQty = 1;
       if (maxAllowedQty < pack.quantity) {
         alert(`Only ${maxAllowedQty} individual units available in stock. Cannot fulfill this pack size.`);
         return;
@@ -130,7 +130,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           <span className="text-[0.8rem] uppercase tracking-[0.1em] text-[var(--color-text)] font-medium">Select Bundle</span>
           <div className="flex flex-wrap gap-3">
             {packs.map((pack: any, idx: number) => (
-              <button 
+              <button
                 key={idx}
                 disabled={isOutOfStock || maxAllowedQty < pack.quantity}
                 onClick={() => setSelectedPackIndex(idx)}
@@ -168,14 +168,14 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 mb-12">
-        <button 
+        <button
           disabled={isOutOfStock}
           onClick={handleAdd}
           className="flex-1 py-[1rem] px-[2rem] rounded-full border border-[var(--color-sage)] text-[var(--color-sage-dark)] text-[0.8rem] uppercase tracking-[0.1em] transition-all duration-300 hover:bg-[var(--color-sage)] hover:text-white focus:outline-none disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--color-sage-dark)]"
         >
           {isOutOfStock ? 'Out of Stock' : added ? 'Added to Cart ✓' : 'Add to Cart'}
         </button>
-        <button 
+        <button
           disabled={isOutOfStock}
           onClick={handleAdd}
           className="flex-1 py-[1rem] px-[2rem] rounded-full bg-[var(--color-sage-dark)] text-white text-[0.8rem] uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_4px_15px_rgba(138,158,126,0.3)] hover:shadow-[0_8px_25px_rgba(138,158,126,0.5)] hover:-translate-y-1 focus:outline-none disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-[0_4px_15px_rgba(138,158,126,0.3)]"
@@ -183,7 +183,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
           {isOutOfStock ? 'Unavailable' : 'Buy Now'}
         </button>
       </div>
-      
+
       {/* Product Details Accordion */}
       <div className="border-t border-[rgba(138,158,126,0.2)]">
         {accordionItems.map((item) => {
